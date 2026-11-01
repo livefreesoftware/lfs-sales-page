@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="lfs-build" content="7fe7b15">
+<meta name="lfs-build" content="88bad3e">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Rebuttal Library</title>
@@ -228,7 +228,15 @@
   .cf-card::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 5px; border-radius: 0 4px 4px 0; background: var(--accent); }
   .cf-card:hover { box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 12%, transparent); }
   .cf-card.picked { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent); }
-  .cf-row.has-pick .cf-card:not(.picked) { opacity: .62; } .cf-row.has-pick .cf-card:not(.picked):hover { opacity: 1; }
+  /* Once a card in a row is picked it moves to the center; the others shrink, gray out and fill the sides */
+  .cf-row.has-pick .cf-cards { display: grid; grid-template-columns: 1fr min(340px, 36%) 1fr; align-items: center; }
+  .cf-side { display: flex; gap: 8px; align-items: center; min-width: 0; }
+  .cf-side.left { justify-content: flex-end; } .cf-side.right { justify-content: flex-start; }
+  .cf-row.has-pick .cf-card.picked { max-width: none; }
+  .cf-row.has-pick .cf-card:not(.picked) { flex: 1 1 0; max-width: 170px; opacity: .5; filter: grayscale(.9); transform: scale(.94); transition: opacity .2s, filter .2s, transform .2s; }
+  .cf-row.has-pick .cf-card:not(.picked):hover { opacity: 1; filter: none; transform: none; }
+  .cf-row.just-picked .cf-card.picked { animation: cfPop .28s ease; }
+  @keyframes cfPop { from { transform: scale(.92); opacity: .6; } to { transform: none; opacity: 1; } }
   .cf-card .cf-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 5px; }
   .cf-card .who { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
   .cf-card .badges { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
@@ -264,12 +272,15 @@
   @media (max-width: 700px) {
     .cf { left: 0; width: 100%; margin-left: 0; }
     .cf-tracker { grid-template-columns: auto 1fr; gap: 6px 12px; padding: 8px 12px; }
-    .cf-tracker > :nth-child(2), .cf-tracker > :nth-child(3), .cf-stack-lab span:first-child { display: none; }
+    .cf-tracker > :nth-child(2), .cf-tracker > :nth-child(3), .cf-stack-lab { display: none; }
     .cf-big { font-size: 24px; }
     .cf-row { grid-template-columns: 1fr; gap: 8px; }
     .cf-head { border-right: 0; border-bottom: 2px solid var(--line); padding: 0 0 6px; min-height: 0; }
     .cf-cards { flex-direction: column; align-items: stretch; }
-    .cf-card { max-width: none; }
+    .cf-row.has-pick .cf-cards { grid-template-columns: 1fr; gap: 8px; }
+    .cf-row.has-pick .cf-card.picked { order: -1; }  /* on a phone the pick goes to the top */
+    .cf-side { flex-direction: column; align-items: stretch; }
+    .cf-card, .cf-row.has-pick .cf-card:not(.picked) { max-width: none; transform: none; }
     .cf-out { flex-basis: auto; }
     .cf-wires { display: none; }
     .cf-track { gap: 22px; }
@@ -1199,7 +1210,7 @@ const CF_TITLES = {opener: "Choose your opener", prospect: "What did they say?",
 const CF_HINTS = {opener: "Ranked by chance of a stop-by or better", prospect: "Green = most likely · red = least likely",
   me: "Ranked by chance of a stop-by or better · #1 is the best move", outcome: "Where this call landed"};
 let cfData = null;  // loaded with the leads: {meta, cards, connections, tiers, house, calls, built}
-let cf = {key: "", niche: "", lead: null, path: [], source: "research", notes: ""};
+let cf = {key: "", niche: "", lead: null, path: [], source: "research", notes: "", justPicked: -1};
 
 // One niche's tree as {openers, fallback, nodes}; outcome nodes are t1…t11
 function cfFlow(type) {
@@ -1327,9 +1338,18 @@ function cfRender() {
   let html = "";
   for (let ci = 0; ci < rows; ci++) {
     const items = cfItems(F, ci), type = items[0].n.type;
-    html += `<div class="cf-row ${cf.path[ci] ? "has-pick" : ""}"><div class="cf-head"><span class="cf-step">${ci + 1}</span><span class="cf-title">${CF_TITLES[type]}</span><span class="cf-hint">${CF_HINTS[type]}</span></div>
-      <div class="cf-cards">${items.map((it, i) => cfCardHtml(F, ci, it, i, items.length)).join("")}</div></div>`;
+    const cards = items.map((it, i) => cfCardHtml(F, ci, it, i, items.length));
+    const at = items.findIndex((it) => it.id === cf.path[ci]);
+    let inner = cards.join("");
+    if (at >= 0) {  // the pick in the center; the rest alternate right and left, best ranked nearest the center
+      const rest = cards.filter((_, i) => i !== at), left = [], right = [];
+      rest.forEach((c, k) => (k % 2 === 0 ? right.push(c) : left.unshift(c)));
+      inner = `<div class="cf-side left">${left.join("")}</div>${cards[at]}<div class="cf-side right">${right.join("")}</div>`;
+    }
+    html += `<div class="cf-row ${at >= 0 ? "has-pick" : ""} ${cf.justPicked === ci ? "just-picked" : ""}"><div class="cf-head"><span class="cf-step">${ci + 1}</span><span class="cf-title">${CF_TITLES[type]}</span><span class="cf-hint">${CF_HINTS[type]}</span></div>
+      <div class="cf-cards">${inner}</div></div>`;
   }
+  cf.justPicked = -1;  // the pop animation plays once, on the row just clicked
   const lastCall = cfData.calls[cfData.calls.length - 1];
   box.innerHTML = `<div class="cf-bar-top"><h3>Cold call flow${cf.lead ? `: ${esc(cf.lead.name)}` : ""}</h3>
     <div class="cf-controls">
@@ -1347,6 +1367,7 @@ function cfRender() {
 
 function cfPick(ci, id) {
   const F = cfFlow(cf.niche);
+  cf.justPicked = ci;
   cf.path = cf.path.slice(0, ci); cf.path[ci] = id;
   const next = F.nodes[id].next;
   if (next.length === 1 && F.nodes[next[0].to].type === "outcome") cf.path.push(next[0].to);  // land on the outcome
