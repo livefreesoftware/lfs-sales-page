@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="lfs-build" content="88bad3e">
+<meta name="lfs-build" content="8a410c3">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Rebuttal Library</title>
@@ -191,7 +191,7 @@
     --t1: var(--l1); --t2: color-mix(in srgb, var(--l1) 75%, var(--l2)); --t3: color-mix(in srgb, var(--l1) 45%, var(--l2));
     --t4: var(--l2); --t5: color-mix(in srgb, var(--l2) 70%, var(--l3)); --t6: color-mix(in srgb, var(--l2) 40%, var(--l3));
     --t7: var(--l3); --t8: color-mix(in srgb, var(--l3) 50%, var(--l4)); --t9: var(--l4);
-    --t10: color-mix(in srgb, var(--l4) 50%, var(--l5)); --t11: var(--l5); --head-h: 64px;
+    --t10: color-mix(in srgb, var(--l4) 50%, var(--l5)); --t11: var(--l5); --t12: color-mix(in srgb, var(--l3) 30%, var(--l4)); --head-h: 64px;
   }
   .cf { position: relative; left: 50%; width: min(1500px, calc(100vw - 32px)); margin: 14px 0 0 calc(min(1500px, calc(100vw - 32px)) / -2); }
   .cf-bar-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -249,7 +249,9 @@
   .cf-card .cf-meter { height: 5px; background: var(--tan); border-radius: 4px; margin-top: 8px; overflow: hidden; }
   .cf-card .cf-meter i { display: block; height: 100%; background: var(--accent); }
   .cf-card.compact { padding: 7px 10px 7px 14px; }
-  .cf-card.compact .cf-text, .cf-card.compact .cf-meter, .cf-card.compact .who, .cf-card.compact .cf-src, .cf-card.compact .cf-ph { display: none; }
+  .cf-card.compact .cf-text, .cf-card.compact .cf-meter, .cf-card.compact .who, .cf-card.compact .cf-src, .cf-card.compact .cf-ph, .cf-card.compact .cf-tip, .cf-card.compact .cf-hint-lead { display: none; }
+  .cf-card .cf-tip { font-size: 12px; color: var(--muted); margin-top: 6px; } .cf-card .cf-tip b { color: var(--green); }
+  .cf-card .cf-hint-lead { font-size: 12px; margin-top: 6px; padding: 5px 8px; border-radius: 8px; background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--ink); }
   .cf-card.compact .cf-top { justify-content: flex-end; margin-bottom: 3px; }
   .cf-card.compact .cf-label { font-size: 13px; margin: 0; }
   .cf-ph { display: inline-block !important; font-size: 9.5px; font-weight: 700; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 0 5px; margin-left: 4px; vertical-align: 2px; }
@@ -487,7 +489,7 @@ const DB = {
   // Call flow: cards and connections are built by the refresh; calls and call_steps are Giles's log
   async callFlows() {
     const [meta, cards, connections, tiers, house, calls] = await Promise.all([DB.content("call_flows"),
-      DB.all("cards", "id,type,label,script,research_source,is_placeholder", "id"),
+      DB.all("cards", "id,type,label,script,research_source,is_placeholder,tip,lead_hint", "id"),
       DB.all("connections", "id,niche,from_card,to_card,to_tier,research_prob", "id"),
       DB.check(sb.from("win_conditions").select("*").order("tier")), DB.houseStats(), DB.calls()]);
     return {meta: meta || {}, cards, connections, tiers, house, calls, built: {}};
@@ -947,6 +949,7 @@ function renderNiche() {
   const type = $("#nicheSelect").value;
   if (!type) { renderOverview(); return; }
   const n = sales.niches.find((x) => x.type === type);
+  $("#leadDetail").innerHTML = "";  // only one page may hold the call flow (#cf) at a time
   if (!current.log || current.log.niche !== type || current.log.lead) startLog(n, null, "general");
   current.niche = n;
   const fmts = {email: `Subject: ${n.email.subject}\n\n${n.email.body}\n\n${n.email.signature}`, text: n.text, spoken: n.spoken};
@@ -967,6 +970,7 @@ function renderNiche() {
 
 function renderLead() {
   const l = current.lead, n = sales.niches.find((x) => x.type === l.type);
+  $("#nicheBody").innerHTML = "";  // only one page may hold the call flow (#cf); the Niches tab redraws when opened
   const lp = current.pitch || {}, pol = lp.polished, tpl = lp.template;
   if (!current.log || current.log.lead !== l.id) startLog(n, l, l.status === "ready" ? "personalized" : "general");
   let pitchHtml;
@@ -1204,7 +1208,10 @@ document.addEventListener("click", async (e) => {
 // Only the prospect-reply % are data. Everything else is calculated from the tree, assuming Giles says the #1 line:
 // the "stop-by+ %" (chance of outcome 1 or 2) that ranks his lines, and the whole closing tracker.
 const CF_MIN_CALLS = 20;  // a card's reply % switch to in-house once that card has been used on this many logged calls
-const CF_SCORE = [100, 92, 75, 65, 50, 40, 30, 20, 5, 0, 0];  // breaks ties when ranking Giles's lines
+const CF_SCORE = [100, 92, 75, 65, 50, 40, 30, 20, 5, 0, 0, 12];  // per outcome 1-12, breaks ties when ranking Giles's lines
+const CF_ORDER = [1, 2, 3, 4, 5, 6, 7, 8, 12, 9, 10, 11];  // best to worst: 12 (got the owner's details) ranks between 8 and 9
+const CF_TIERS = CF_ORDER.length;
+const CF_LEAD_HINT = {review_themes: "From their reviews", years: "Years in business", services: "Their services", pain: "Pain points"};
 const CF_GROUP = {won: "WON", soft: "SOFT WIN", lost: "LOST"};
 const CF_TITLES = {opener: "Choose your opener", prospect: "What did they say?", me: "Your best next line", outcome: "Result"};
 const CF_HINTS = {opener: "Ranked by chance of a stop-by or better", prospect: "Green = most likely · red = least likely",
@@ -1237,7 +1244,7 @@ function cfDist(F, id) {
   const memo = F.memo = F.memo || {};
   if (memo[id]) return memo[id];
   const n = F.nodes[id];
-  let d = new Array(11).fill(0);
+  let d = new Array(CF_TIERS).fill(0);
   if (n.type === "outcome") { d[n.tier - 1] = 1; return memo[id] = d; }
   const replies = n.next.filter((e) => e.research !== undefined);
   if (replies.length) {  // the prospect decides: a weighted mix
@@ -1264,9 +1271,16 @@ function cfItems(F, ci) {
 }
 
 // {shop} becomes the lead's name; [day] and [time] are left for Giles to fill in while talking
+// {shop} and {hi} and the lead's [rating] / [reviews] fill in on lead pages; [day], [time], [name] and [your number] stay blank for Giles
 function cfText(F, text) {
-  const shop = cf.lead ? cf.lead.name.split(/\s+[-|–]\s+/)[0] : F.fallback;
-  return esc(text).replace(/\{shop\}/g, `<span class="fill">${esc(shop)}</span>`).replace(/\[(day|time)\]/g, `<span class="blank">[$1]</span>`);
+  const l = cf.lead, fill = (v) => `<span class="fill">${esc(v)}</span>`, blank = (k) => `<span class="blank">[${k}]</span>`;
+  const shop = l ? l.name.split(/\s+[-|–]\s+/)[0] : F.fallback;
+  const owner = l && l.owner ? String(l.owner).trim().split(/\s+/)[0] : "";
+  const hi = owner ? `Hi, is this ${fill(owner)}? ` : l ? "Hi. " : `Hi, is this ${blank("owner")}? `;
+  return esc(text).replace(/\{shop\}/g, fill(shop)).replace(/\{hi\}/g, hi)
+    .replace(/\[rating\]/g, l && l.rating ? fill(l.rating) : blank("rating"))
+    .replace(/\[reviews\]/g, l && l.reviews ? fill(l.reviews) : blank("reviews"))
+    .replace(/\[(day|time|name|your number)\]/g, (m, k) => blank(k));
 }
 
 function cfOpen(type, lead) {
@@ -1288,7 +1302,7 @@ function cfCardHtml(F, ci, it, i, count) {
   const {id, n, a} = it, picked = cf.path[ci] === id, other = cf.path[ci] && !picked;
   if (n.type === "outcome") {
     return `<div class="cf-out" style="--accent:${cfTierColor(n.tier)}">
-      <div class="tier">Outcome #${n.tier} of 11${n.is_main_goal ? `<span class="cf-goal">★ MAIN GOAL</span>` : ""}</div>
+      <div class="tier">Outcome #${n.tier}${n.is_main_goal ? `<span class="cf-goal">★ MAIN GOAL</span>` : ""}</div>
       <div class="big">${CF_GROUP[n.outcome_group]}</div><div class="cf-label"><b>${esc(n.label)}</b></div>
       <div class="crm"><b>Log in the CRM:</b> ${esc(n.crm_log_note || "")}</div>
       <input type="text" id="cfNotes" placeholder="Notes (optional)" value="${esc(cf.notes)}" aria-label="Call notes">
@@ -1304,6 +1318,8 @@ function cfCardHtml(F, ci, it, i, count) {
     <span class="cf-top"><span class="who">${isP ? "Prospect might say" : n.type === "opener" ? "You · opener" : "You"}</span><span class="badges">${badges}</span></span>
     <span class="cf-label">${esc(n.label)}${n.is_placeholder ? `<span class="cf-ph">PLACEHOLDER</span>` : ""}</span>
     <span class="cf-text ${isP ? "say" : ""}">${isP ? "“" + cfText(F, n.script) + "”" : cfText(F, n.script)}</span>
+    ${n.lead_hint && cf.lead && cf.lead[n.lead_hint] && !/not (retrieved|found|available)|unknown/i.test(cf.lead[n.lead_hint]) ? `<span class="cf-hint-lead"><b>${CF_LEAD_HINT[n.lead_hint]}:</b> ${esc(cf.lead[n.lead_hint])}</span>` : ""}
+    ${n.tip ? `<span class="cf-tip"><b>Tip:</b> ${esc(n.tip)}</span>` : ""}
     <span class="cf-meter"><i style="width:${isP ? Math.round(a.p) : sp}%"></i></span></button>`;
 }
 
@@ -1324,8 +1340,8 @@ function cfTrackerHtml(F) {
     <div class="cf-tk"><span class="cf-big">${now}%</span>${delta}<span><b>Closing tracker</b><br>chance of a stop-by or better</span></div>
     <div class="cf-tk"><span class="cf-mid">${cfPct(cfAnyWin(d))}%</span><span>any win<br>(outcomes 1–6)</span></div>
     <div class="cf-tk"><span>Most likely result<br><b>#${t.tier} ${esc(t.short)}</b> · ${cfPct(d[top])}%</span></div>
-    <div style="min-width:0"><div class="cf-stack">${d.map((v, i) => `<i title="#${i + 1} ${esc(F.nodes["t" + (i + 1)].short)}: ${cfPct(v)}%" style="width:${v * 100}%;background:${cfTierColor(i + 1)}"></i>`).join("")}</div>
-      <div class="cf-stack-lab"><span>Best (1) ← all 11 outcomes → worst (11)</span>${note}</div></div></div>`;
+    <div style="min-width:0"><div class="cf-stack">${CF_ORDER.map((tier) => `<i title="#${tier} ${esc(F.nodes["t" + tier].short)}: ${cfPct(d[tier - 1])}%" style="width:${d[tier - 1] * 100}%;background:${cfTierColor(tier)}"></i>`).join("")}</div>
+      <div class="cf-stack-lab"><span>Best ← all ${CF_TIERS} outcomes → worst</span>${note}</div></div></div>`;
 }
 
 function cfRender() {
@@ -1425,7 +1441,7 @@ function cfPanelRender(F) {
   const who = (n) => (n.type === "prospect" ? "Prospect" : n.type === "outcome" ? "Result" : "Giles");
   panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><b class="count">Goals &amp; transcript</b><button class="btn quiet" id="cfPanelClose" aria-label="Close">×</button></div>
     <h3>Win conditions, best to worst</h3>
-    <ul class="cf-tiers">${cfData.tiers.map((t) => `<li class="${last && last.tier === t.tier ? "reached" : ""}"><span class="n" style="background:${cfTierColor(t.tier)}">${t.tier}</span>
+    <ul class="cf-tiers">${CF_ORDER.map((tier) => cfData.tiers.find((t) => t.tier === tier)).filter(Boolean).map((t) => `<li class="${last && last.tier === t.tier ? "reached" : ""}"><span class="n" style="background:${cfTierColor(t.tier)}">${t.tier}</span>
       <span>${esc(t.label)}${t.is_main_goal ? `<span class="cf-goal">★ MAIN GOAL</span>` : ""}</span></li>`).join("")}</ul>
     <h3>Call transcript</h3>
     ${cf.path.length ? cf.path.map((id) => { const n = F.nodes[id];
