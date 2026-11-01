@@ -2,7 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="lfs-build" content="8a410c3">
+<meta name="lfs-build" content="e5256ad">
+<!--
+  2026-11-01 polish pass (from a full click-through test on desktop 1440px + phone 390px). Every change is marked "2026-11-01" in place.
+  Bugs fixed: blank page when the app reopened on a lead; Services showed "None tagged yet" when reopened; the Goals & transcript
+  panel stayed open over other tabs (and covered the tabs on phones); no tab highlighted on a lead page; Niche filter menu
+  never closed; a lead with an unknown niche crashed its page; undo buttons removed records with no confirmation.
+  Polish: in-app dialog replaces prompt()/confirm(); loading spinners; 40px tap targets on touch screens; muted text and
+  % pills pass WCAG AA contrast; compact phone header with tab-row edge fade; Call buttons on lead/business cards; curly
+  quotes; sign-in labels and red errors; founding-offer switch; arrow-key tab navigation; SRI on the Supabase script;
+  only http(s) links from the sheet are clickable.
+-->
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Rebuttal Library</title>
@@ -11,28 +22,33 @@
 <meta name="theme-color" content="#F6F3ED">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<!-- 2026-11-01 polish pass: SRI hash pins the exact Supabase build so a tampered CDN file can't run on this page -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" integrity="sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o" crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #F6F3ED; --card: #FFFDF9; --tan: #F1ECE4; --line: #E2DACD;
-    --ink: #3C1A2C; --text: #665159; --muted: #8a7880;
+    /* 2026-11-01: --muted darkened from #8a7880 (3.5:1, failed WCAG AA) to #73626a (4.8:1 on every background) */
+    --ink: #3C1A2C; --text: #665159; --muted: #73626a;
     --green: #577249; --green-hover: #46603A; --on-green: #ffffff;
     --l1: #577249; --l2: #8a9a3c; --l3: #c08a2e; --l4: #c4622b; --l5: #b23a3a;
+    --pill-shade: #000; --danger: #a33232; --tap: 32px;
   }
+  /* 2026-11-01: bigger tap targets on phones and tablets (used mid-call, one-handed) */
+  @media (pointer: coarse) { :root { --tap: 40px; } }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #1f1a1d; --card: #2a2326; --tan: #332a2e; --line: #43383d;
       --ink: #f3e9ee; --text: #d4c5cc; --muted: #a2939a;
       --green: #8fb07f; --green-hover: #a5c496; --on-green: #15200f;
-      --l1: #8fb07f; --l2: #b8c46a; --l3: #e0b25a; --l4: #ec8a55; --l5: #ef6f6f;
+      --l1: #8fb07f; --l2: #b8c46a; --l3: #e0b25a; --l4: #ec8a55; --l5: #ef6f6f; --pill-shade: #fff; --danger: #ef6f6f;
     }
   }
   :root[data-theme="dark"] {
     --bg: #1f1a1d; --card: #2a2326; --tan: #332a2e; --line: #43383d;
     --ink: #f3e9ee; --text: #d4c5cc; --muted: #a2939a;
     --green: #8fb07f; --green-hover: #a5c496; --on-green: #15200f;
-    --l1: #8fb07f; --l2: #b8c46a; --l3: #e0b25a; --l4: #ec8a55; --l5: #ef6f6f;
+    --l1: #8fb07f; --l2: #b8c46a; --l3: #e0b25a; --l4: #ec8a55; --l5: #ef6f6f; --pill-shade: #fff; --danger: #ef6f6f;
   }
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -47,10 +63,18 @@
   .head { max-width: 980px; margin: 0 auto; padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
   .head h1 { font-size: 22px; margin-right: auto; }
   .tabs { display: flex; gap: 4px; background: var(--tan); padding: 4px; border-radius: 999px; }
-  .tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-  .tabs button { white-space: nowrap; flex: none; border: 0; background: none; padding: 6px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--text); }
+  .tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; scroll-padding: 0 24px; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs button { white-space: nowrap; flex: none; border: 0; background: none; padding: 6px 14px; min-height: var(--tap); border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--text); }
+  .tabs button:hover { color: var(--ink); }
   .tabs button[aria-selected="true"] { background: var(--green); color: var(--on-green); }
-  .save-state { font-size: 12px; color: var(--muted); min-width: 60px; text-align: right; }
+  /* 2026-11-01: fade the edge when more tabs are hidden off-screen, so it's obvious the row scrolls */
+  .tabs.more-right { -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); mask-image: linear-gradient(90deg, #000 85%, transparent); }
+  .tabs.more-left { -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%); mask-image: linear-gradient(90deg, transparent, #000 15%); }
+  .tabs.more-left.more-right { -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+  .save-state { font-size: 12px; color: var(--muted); text-align: right; }
+  .save-state:empty { display: none; }
+  .save-state.err { color: var(--danger); font-weight: 600; }
 
   .search { display: flex; gap: 8px; margin: 18px 0 12px; }
   .search input { flex: 1; min-width: 0; padding: 14px 18px; font-size: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--ink); }
@@ -58,7 +82,7 @@
 
   .label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 14px 0 6px; }
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { border: 1px solid var(--line); background: var(--card); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-size: 13.5px; color: var(--ink); }
+  .chip { border: 1px solid var(--line); background: var(--card); padding: 6px 12px; min-height: var(--tap); border-radius: 999px; cursor: pointer; font-size: 13.5px; color: var(--ink); }
   .chip:hover { border-color: var(--green); }
   .chip[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: var(--on-green); }
   .chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
@@ -69,7 +93,8 @@
   select { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 12px; font-size: 13.5px; }
 
   .list { display: grid; gap: 10px; }
-  .obj { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .obj { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; scroll-margin-top: calc(var(--head-h) + 12px); }
+  .cf, .logbox { scroll-margin-top: calc(var(--head-h) + 12px); }
   .obj > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: grid; grid-template-columns: 6px 1fr auto; gap: 12px; align-items: center; }
   .obj > summary::-webkit-details-marker { display: none; }
   .bar { width: 6px; align-self: stretch; border-radius: 3px; }
@@ -87,12 +112,17 @@
   .score { font-size: 12px; color: var(--muted); }
   .reb p { margin: 0; color: var(--ink); font-size: 15.5px; white-space: pre-wrap; }
   .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .btn { border: 1px solid var(--line); background: var(--bg); padding: 5px 12px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .btn { border: 1px solid var(--line); background: var(--bg); padding: 5px 12px; min-height: var(--tap); display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn.danger { color: var(--danger); }
+  .btn.call { background: var(--green); border-color: var(--green); color: var(--on-green); font-size: 14px; }
   .btn:hover { border-color: var(--green); }
   .btn.primary { background: var(--green); border-color: var(--green); color: var(--on-green); }
   .btn.primary:hover { background: var(--green-hover); }
   .btn.on { background: var(--green); border-color: var(--green); color: var(--on-green); }
   .btn.quiet { border-color: transparent; background: none; color: var(--muted); }
+  .btn.quiet:hover { color: var(--ink); }
+  .btn.quiet.danger, .btn.quiet.danger:hover { color: var(--danger); }
   .obj-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
   textarea, .form input, .form select { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; color: var(--ink); }
   textarea { min-height: 80px; resize: vertical; }
@@ -110,8 +140,29 @@
   .toast.show { opacity: 1; }
   .signin { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; }
   .signin form { width: 100%; max-width: 360px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 12px; }
-  .signin h2 { margin: 0; } .signin p { margin: 0; color: var(--muted); font-size: 14px; }
-  .signin input { width: 100%; font-size: 16px; padding: 10px 12px; border-radius: 10px; }
+  .signin h2 { margin: 0; } .signin h2 em { color: var(--green); } .signin p { margin: 0; color: var(--muted); font-size: 14px; }
+  .signin input { width: 100%; font-size: 16px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+  .signin .btn { min-height: 44px; font-size: 15px; }
+  .signin #signinMsg.err { color: var(--danger); font-weight: 600; }
+  .loading { text-align: center; padding: 40px 16px; color: var(--muted); }
+  .loading::before { content: ""; display: block; width: 22px; height: 22px; margin: 0 auto 10px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--green); animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  /* 2026-11-01: in-app dialog replaces the browser's prompt()/confirm() pop-ups */
+  .ask { border: 1px solid var(--line); border-radius: 16px; padding: 18px; width: min(460px, calc(100vw - 32px)); background: var(--card); color: var(--text); box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+  .ask::backdrop { background: rgba(30, 20, 25, .45); }
+  .ask h2 { font-size: 19px; margin-bottom: 6px; }
+  .ask p { margin: 0 0 10px; font-size: 14px; }
+  .ask label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; color: var(--ink); margin-top: 8px; }
+  .ask input, .ask textarea { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; color: var(--ink); font-size: 16px; }
+  .ask .actions { justify-content: flex-end; margin-top: 14px; }
+  .switch-row { display: flex; gap: 12px; align-items: center; margin-top: 14px; padding: 10px 14px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; font-size: 13.5px; color: var(--text); cursor: pointer; }
+  .switch-row input { appearance: none; flex: none; width: 40px; height: 24px; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; transition: background .15s; margin: 0; }
+  .switch-row input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .15s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .switch-row input:checked { background: var(--green); }
+  .switch-row input:checked::after { transform: translateX(16px); }
+  .switch-row b { color: var(--ink); }
+  .cf-backdrop { position: fixed; inset: 0; z-index: 19; background: rgba(30, 20, 25, .35); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .cf-backdrop.open { opacity: 1; pointer-events: auto; }
   .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 18px; }
   .stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
   .stat b { display: block; font-family: Fraunces, Georgia, serif; font-size: 26px; color: var(--ink); }
@@ -152,6 +203,8 @@
   .filterbar .menu label { display: flex; gap: 8px; align-items: center; font-size: 14px; font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--ink); padding: 3px 4px; }
   .lead-row { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; cursor: pointer; text-align: left; width: 100%; color: var(--text); }
   .lead-row:hover { border-color: var(--green); }
+  .lead-row > span { display: block; min-width: 0; } .lead-row > span.meta { display: flex; }
+  .contact { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .overview { overflow-x: auto; margin-top: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); }
   .overview table { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 640px; }
   .overview th, .overview td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -240,7 +293,8 @@
   .cf-card .cf-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 5px; }
   .cf-card .who { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
   .cf-card .badges { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-  .cf-pill { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--accent); color: var(--on-green); white-space: nowrap; }
+  /* 2026-11-01: pill background darkened ~22% so white text passes contrast on the yellow/amber accents (was ~3:1) */
+  .cf-pill { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 78%, var(--pill-shade)); color: var(--on-green); white-space: nowrap; }
   .cf-rank { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--tan); color: var(--ink); white-space: nowrap; }
   .cf-rank.best { background: var(--green); color: var(--on-green); }
   .cf-card .cf-label { font-weight: 700; font-size: 14px; line-height: 1.3; color: var(--ink); margin-bottom: 4px; }
@@ -261,7 +315,8 @@
   .cf-out .crm { margin-top: 10px; font-size: 12.5px; background: var(--card); border-radius: 10px; padding: 8px 10px; text-align: left; color: var(--text); }
   .cf-out input { width: 100%; margin-top: 10px; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 8px 10px; }
   .cf-goal { display: inline-block; background: var(--ink); color: var(--bg); font-size: 10.5px; font-weight: 700; border-radius: 6px; padding: 1px 7px; margin-left: 6px; letter-spacing: .04em; }
-  .cf-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100vw); z-index: 20; background: var(--card); border-left: 1px solid var(--line);
+  /* 2026-11-01: leaves a 44px strip of dimmed page on phones so a tap outside closes it */
+  .cf-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, calc(100vw - 44px)); z-index: 20; background: var(--card); border-left: 1px solid var(--line);
     box-shadow: -12px 0 30px color-mix(in srgb, var(--ink) 14%, transparent); padding: 16px 20px; overflow: auto; transform: translateX(105%); transition: transform .25s ease; }
   .cf-panel.open { transform: none; }
   .cf-panel h3 { font-size: 17px; margin: 14px 0 6px; }
@@ -292,8 +347,14 @@
     .lead-row { grid-template-columns: 44px 1fr; }
     .lead-row .end { grid-column: 2; }
     .prep { grid-template-columns: 1fr; }
-    .flow { grid-template-columns: 1fr 1fr; }
-    .head h1 { font-size: 19px; width: 100%; }
+    /* 2026-11-01: title + Sign out share row one, tabs get a full-width row two (header was 151px tall, now ~100px) */
+    .head { padding: 8px 12px; gap: 6px 10px; }
+    .head h1 { font-size: 19px; }
+    .head .tabs { order: 3; width: 100%; }
+    .flow { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .flow div { flex: 0 0 62%; scroll-snap-align: start; }
+    .stats { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+    .stat b { font-size: 22px; }
     .obj > summary { grid-template-columns: 5px 1fr; }
     .pct { grid-column: 2; text-align: left; }
     .pct small { display: inline; margin-left: 4px; }
@@ -308,7 +369,7 @@
 <header>
   <div class="head">
     <h1>Rebuttal <em>Library</em></h1>
-    <div class="tabs" role="tablist">
+    <div class="tabs" role="tablist" aria-label="Sections" id="tabs">
       <button role="tab" aria-selected="false" data-view="leads">Leads</button>
       <button role="tab" aria-selected="false" data-view="niches">Niches</button>
       <button role="tab" aria-selected="false" data-view="pitch">Services</button>
@@ -379,7 +440,8 @@
     <div class="biz-results" id="bizResults"></div>
     <div id="bizCard"></div>
 
-    <label class="count" style="display:flex;gap:8px;align-items:center;margin-top:14px"><input type="checkbox" id="foundingToggle"> Founding offer is open (free full build-out for the first 10 clients). Off by default. Turn it on only after you confirm.</label>
+    <!-- 2026-11-01: founding-offer checkbox restyled as a clear on/off switch -->
+    <label class="switch-row"><input type="checkbox" id="foundingToggle" role="switch"><span><b>Founding offer is open</b> (free full build-out for the first 10 clients). Off by default. Turn it on only after you confirm.</span></label>
     <div class="label">Service to pitch</div>
     <div class="chips" id="services"></div>
     <div id="pitchBody"></div>
@@ -392,7 +454,7 @@
       <div class="say" id="practiceSay">Press "Next objection" to start</div>
       <div class="meta" id="practiceMeta" style="justify-content:center"></div>
       <div class="controls">
-        <button class="btn" id="reveal">Show rebuttals</button>
+        <button class="btn" id="reveal" disabled>Show rebuttals</button>
         <button class="btn primary" id="next">Next objection</button>
       </div>
       <div class="rebs" id="practiceRebs" hidden></div>
@@ -423,12 +485,21 @@
   </section>
 </main>
 <div class="toast" id="toast" role="status"></div>
+<!-- 2026-11-01: one reusable dialog for edits, new rebuttals and delete/undo confirmations -->
+<dialog class="ask" id="ask"><form method="dialog" id="askForm">
+  <h2 id="askTitle"></h2><p id="askMsg"></p><div id="askFields"></div>
+  <div class="actions"><button class="btn quiet" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="ok" id="askOk">Save</button></div>
+</form></dialog>
+<div class="cf-backdrop" id="cfBackdrop"></div>
 <div class="signin" id="signin" hidden>
   <form id="signinForm">
     <h2>Rebuttal <em>Library</em></h2>
-    <p>Sign in with your Live Free Software account.</p>
-    <input type="email" name="email" autocomplete="username" placeholder="Email" required>
-    <input type="password" name="password" autocomplete="current-password" placeholder="Password" required>
+    <p style="margin-top:-6px">Sign in with your Live Free Software account.</p>
+    <!-- 2026-11-01: labels + bigger fields; error text now shows in red -->
+    <label class="count" for="siEmail" style="margin-bottom:-8px">Email</label>
+    <input type="email" name="email" id="siEmail" autocomplete="username" inputmode="email" required>
+    <label class="count" for="siPass" style="margin-bottom:-8px">Password</label>
+    <input type="password" name="password" id="siPass" autocomplete="current-password" required>
     <button class="btn primary" type="submit">Sign in</button>
     <p id="signinMsg" role="alert"></p>
   </form>
@@ -443,6 +514,35 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
 const levelColor = (n) => `var(--l${n})`;
+// 2026-11-01: curly quotes around what the prospect said
+const said = (t) => `“${esc(t)}”`;
+// 2026-11-01: only http(s) links from the sheet become clickable, so a bad cell can't inject a javascript: link
+const safeUrl = (u) => (/^https?:\/\//i.test(String(u || "").trim()) ? String(u).trim() : "");
+const telHref = (p) => "tel:" + String(p).replace(/[^\d+]/g, "");
+
+// 2026-11-01: in-app replacement for prompt()/confirm(). Returns {field: value} (or true for a plain confirm), or null if cancelled.
+function ask({title, msg = "", fields = [], ok = "Save", danger = false}) {
+  const dlg = $("#ask");
+  $("#askTitle").textContent = title;
+  $("#askMsg").textContent = msg; $("#askMsg").hidden = !msg;
+  $("#askFields").innerHTML = fields.map((f) => `<label>${esc(f.label)}${f.multiline
+    ? `<textarea name="${f.name}" rows="4" ${f.required ? "required" : ""}>${esc(f.value || "")}</textarea>`
+    : `<input name="${f.name}" value="${esc(f.value || "")}" ${f.required ? "required" : ""} autocomplete="off">`}</label>`).join("");
+  const okBtn = $("#askOk");
+  okBtn.textContent = ok; okBtn.className = "btn primary" + (danger ? " danger-fill" : "");
+  okBtn.style.background = danger ? "var(--danger)" : ""; okBtn.style.borderColor = danger ? "var(--danger)" : "";
+  return new Promise((resolve) => {
+    dlg.addEventListener("close", () => {
+      if (dlg.returnValue !== "ok") return resolve(null);
+      if (!fields.length) return resolve(true);
+      resolve(Object.fromEntries(fields.map((f) => [f.name, $("#askForm")[f.name].value.trim()])));
+    }, {once: true});
+    dlg.returnValue = "";
+    dlg.showModal();
+    const first = $("#askFields").querySelector("input, textarea");
+    if (first) { first.focus(); first.select && first.select(); } else okBtn.focus();
+  });
+}
 
 // How likely an objection is: your starting guess, nudged up by what showed up on recorded calls and on your own calls
 function likely(o) { return Math.min(99, Math.round(o.probability + (o.heard_on_calls || 0) * 1.5 + (o.times_heard || 0) * 2)); }
@@ -507,10 +607,14 @@ async function load() {
     lib = (await DB.library()) || lib;
   } catch (e) {
     try { lib = JSON.parse(localStorage.getItem(STORE)) || lib; } catch (_) {}
-    setSave("Offline: showing the last copy on this device");
+    setSave("Offline: showing the last copy on this device", true);
   }
+  libLoaded = true;
   render();
+  // 2026-11-01: if the app reopened on Services, redraw it now that the objections exist (it showed "None tagged yet")
+  if (pitch.services.length) renderPitch();
 }
+let libLoaded = false;
 
 let saveTimer;
 function save() {
@@ -519,10 +623,16 @@ function save() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try { await DB.saveLibrary(lib); setSave("Saved"); }
-    catch (e) { setSave("Not saved: check your connection"); }
+    catch (e) { setSave("Not saved: check your connection", true); }
   }, 400);
 }
-function setSave(t) { $("#saveState").textContent = t; }
+// 2026-11-01: errors show in red; "Saved" fades after a few seconds so the header stays clean
+let saveClear;
+function setSave(t, err = false) {
+  const el = $("#saveState"); el.textContent = t; el.classList.toggle("err", err);
+  clearTimeout(saveClear);
+  if (t === "Saved") saveClear = setTimeout(() => { if (el.textContent === "Saved") el.textContent = ""; }, 2500);
+}
 function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("show"); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 1600); }
 
 function matches(o) {
@@ -537,7 +647,7 @@ function render() {
   const catName = Object.fromEntries(lib.categories.map((c) => [c.id, c.name]));
   // Most likely chips
   const top = [...lib.objections].sort((a, b) => likely(b) - likely(a)).slice(0, 12);
-  $("#top").innerHTML = top.map((o) => `<button class="chip" data-jump="${o.id}"><span class="dot" style="background:${levelColor(o.intensity)}"></span>${esc(o.text)}</button>`).join("");
+  $("#top").innerHTML = top.map((o) => `<button class="chip" data-jump="${esc(o.id)}"><span class="dot" style="background:${levelColor(o.intensity)}"></span>${esc(o.text)}</button>`).join("");
   $("#levels").innerHTML = [1, 2, 3, 4, 5].map((n) => `<button class="chip" data-level="${n}" aria-pressed="${state.levels.has(n)}"><span class="dot" style="background:${levelColor(n)}"></span>${n} ${LEVELS[n]}</button>`).join("");
   $("#cats").innerHTML = `<button class="chip" data-cat="" aria-pressed="${!state.cat}">All</button>` +
     lib.categories.map((c) => `<button class="chip" data-cat="${c.id}" aria-pressed="${state.cat === c.id}">${esc(c.name)}</button>`).join("");
@@ -552,9 +662,11 @@ function render() {
     heard: (a, b) => ((b.times_heard || 0) + (b.heard_on_calls || 0)) - ((a.times_heard || 0) + (a.heard_on_calls || 0)),
   };
   const shown = lib.objections.filter(matches).sort(sorters[state.sort]);
-  $("#count").textContent = `${shown.length} of ${lib.objections.length} objections`;
-  $("#list").innerHTML = shown.length ? shown.map((o) => card(o, catName)).join("") :
-    `<div class="empty">Nothing matches yet. <button class="btn primary" data-add-from-search>Add "${esc(state.q)}" as a new objection</button></div>`;
+  $("#count").textContent = libLoaded ? `${shown.length} of ${lib.objections.length} objections` : "";
+  // 2026-11-01: spinner while loading; the empty state only offers "Add" when something was typed
+  $("#list").innerHTML = !libLoaded ? `<div class="loading">Loading your library…</div>` : shown.length ? shown.map((o) => card(o, catName)).join("") :
+    state.q ? `<div class="empty"><p>Nothing matches “${esc(state.q)}”.</p><button class="btn primary" data-add-from-search>Add it as a new objection</button></div>`
+    : `<div class="empty">No objections match these filters.</div>`;
 
   const tips = lib.tips || [];
   const topics = [...new Set(tips.map((t) => t.topic))];
@@ -564,6 +676,7 @@ function render() {
     .map((t) => `<div class="obj" style="padding:14px 16px"><div class="style">${esc(t.topic)}</div><p style="margin:4px 0 0;color:var(--ink)">${esc(t.text)}</p></div>`).join("") ||
     `<div class="empty">No tips yet.</div>`;
 
+  if (!libLoaded) { $("#stats").innerHTML = ""; return; }
   const rebs = lib.objections.flatMap((o) => o.rebuttals);
   const used = rebs.reduce((n, r) => n + r.used, 0), worked = rebs.reduce((n, r) => n + r.worked, 0);
   $("#stats").innerHTML = [
@@ -577,9 +690,9 @@ function render() {
 function card(o, catName) {
   const heard = o.heard_on_calls ? `<span class="pill heard">Heard on ${o.heard_on_calls} recorded call${o.heard_on_calls > 1 ? "s" : ""}</span>` : "";
   const mine = o.times_heard ? `<span class="pill">You've heard it ${o.times_heard}×</span>` : "";
-  return `<details class="obj" data-id="${o.id}" ${state.open.has(o.id) ? "open" : ""}>
+  return `<details class="obj" data-id="${esc(o.id)}" ${state.open.has(o.id) ? "open" : ""}>
     <summary><span class="bar" style="background:${levelColor(o.intensity)}"></span>
-      <div><h3>"${esc(o.text)}"</h3><div class="meta"><span class="pill">${o.intensity} ${LEVELS[o.intensity]}</span><span class="pill">${esc(catName[o.category] || o.category)}</span>${heard}${mine}</div></div>
+      <div><h3>${said(o.text)}</h3><div class="meta"><span class="pill">${o.intensity} ${LEVELS[o.intensity]}</span><span class="pill">${esc(catName[o.category] || o.category)}</span>${heard}${mine}</div></div>
       <div class="pct">${likely(o)}%<small>of calls</small></div></summary>
     <div class="body">
       ${o.variants.length ? `<p class="variants">Also sounds like: ${o.variants.map(esc).join(" · ")}</p>` : ""}
@@ -588,23 +701,23 @@ function card(o, catName) {
         <button class="btn primary" data-act="heard">I just heard this</button>
         <button class="btn" data-act="add-reb">+ Add rebuttal</button>
         <button class="btn quiet" data-act="edit-obj">Edit</button>
-        <button class="btn quiet" data-act="del-obj">Delete</button>
+        <button class="btn quiet danger" data-act="del-obj">Delete</button>
       </div>
     </div></details>`;
 }
 
 function rebuttal(o, r) {
   const score = r.used ? `Worked ${r.worked} of ${r.used}` : "Not tried yet";
-  return `<div class="reb" data-reb="${r.id}">
+  return `<div class="reb" data-reb="${esc(r.id)}">
     <div class="reb-head"><span class="style">${esc(r.style)}</span><span class="score">${score}</span>${r.starred ? "<span class=score>★ favorite</span>" : ""}</div>
     <p>${esc(r.text)}</p>
     <div class="actions">
       <button class="btn" data-act="worked">✓ Worked</button>
       <button class="btn" data-act="flop">✗ Didn't work</button>
-      <button class="btn ${r.starred ? "on" : ""}" data-act="star" aria-pressed="${r.starred}">★</button>
-      <button class="btn quiet" data-act="copy">Copy</button>
+      <button class="btn ${r.starred ? "on" : ""}" data-act="star" aria-pressed="${r.starred}" aria-label="${r.starred ? "Remove from favorites" : "Mark as favorite"}" title="Favorite">★</button>
+      <button class="btn" data-act="copy">Copy</button>
       <button class="btn quiet" data-act="edit-reb">Edit</button>
-      <button class="btn quiet" data-act="del-reb">Delete</button>
+      <button class="btn quiet danger" data-act="del-reb">Delete</button>
     </div></div>`;
 }
 
@@ -630,15 +743,23 @@ document.addEventListener("click", async (e) => {
   else if (act === "flop") { r.used++; toast("Noted. Better ones will move up."); }
   else if (act === "star") { r.starred = !r.starred; }
   else if (act === "copy") { try { await navigator.clipboard.writeText(r.text); toast("Copied"); } catch (_) { toast("Couldn't copy"); } return; }
-  else if (act === "edit-reb") { const v = prompt("Edit rebuttal", r.text); if (!v || v === r.text) return; r.text = v.trim(); }
-  else if (act === "del-reb") { if (!confirm("Delete this rebuttal?")) return; o.rebuttals = o.rebuttals.filter((x) => x !== r); }
-  else if (act === "add-reb") {
-    const v = prompt(`Your rebuttal to "${o.text}"`); if (!v) return;
-    const style = prompt("Give it a short style label (e.g. Question, Humor, Straight)", "Mine") || "Mine";
-    o.rebuttals.push({id: "mine-" + Date.now().toString(36), style: style.trim(), text: v.trim(), used: 0, worked: 0, starred: false});
+  // 2026-11-01: edits and deletes use the in-app dialog (ask) instead of the browser's prompt()/confirm()
+  else if (act === "edit-reb") {
+    const v = await ask({title: "Edit rebuttal", fields: [{name: "style", label: "Style label", value: r.style}, {name: "text", label: "Rebuttal", value: r.text, multiline: true, required: true}]});
+    if (!v || !v.text) return; r.text = v.text; r.style = v.style || r.style;
   }
-  else if (act === "edit-obj") { const v = prompt("Edit what they say", o.text); if (!v || v === o.text) return; o.text = v.trim(); }
-  else if (act === "del-obj") { if (!confirm(`Delete "${o.text}" and its rebuttals?`)) return; lib.objections = lib.objections.filter((x) => x !== o); }
+  else if (act === "del-reb") { if (!(await ask({title: "Delete this rebuttal?", msg: r.text, ok: "Delete", danger: true}))) return; o.rebuttals = o.rebuttals.filter((x) => x !== r); }
+  else if (act === "add-reb") {
+    const v = await ask({title: "Add a rebuttal", msg: `To “${o.text}”`, ok: "Add rebuttal",
+      fields: [{name: "text", label: "What you'd say back", multiline: true, required: true}, {name: "style", label: "Short style label (e.g. Question, Humor, Straight)", value: "Mine"}]});
+    if (!v || !v.text) return;
+    o.rebuttals.push({id: "mine-" + Date.now().toString(36), style: v.style || "Mine", text: v.text, used: 0, worked: 0, starred: false});
+  }
+  else if (act === "edit-obj") {
+    const v = await ask({title: "Edit objection", fields: [{name: "text", label: "What they say", value: o.text, required: true}, {name: "variants", label: "Other ways they say it (separate with ;)", value: o.variants.join("; ")}]});
+    if (!v || !v.text) return; o.text = v.text; o.variants = v.variants.split(";").map((s) => s.trim()).filter(Boolean);
+  }
+  else if (act === "del-obj") { if (!(await ask({title: "Delete this objection?", msg: `“${o.text}” and its ${o.rebuttals.length} rebuttal${o.rebuttals.length === 1 ? "" : "s"} will be removed.`, ok: "Delete", danger: true}))) return; lib.objections = lib.objections.filter((x) => x !== o); }
   save(); render();
 });
 
@@ -657,21 +778,49 @@ document.addEventListener("keydown", (e) => {
 });
 
 function showView(v) {
-  document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.view === v));
+  // 2026-11-01: a lead page needs a lead picked first, so reopening the app on "lead" now goes to the Leads list (was a blank page)
+  if (v === "lead" && !current.lead) v = "leads";
+  const tabFor = v === "lead" ? "leads" : v;  // keep "Leads" highlighted while viewing one lead (no tab was highlighted)
+  document.querySelectorAll(".tabs button").forEach((b) => {
+    const on = b.dataset.view === tabFor;
+    b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1;
+    if (on) b.scrollIntoView({block: "nearest", inline: "nearest"});
+  });
+  cfPanelOpen(false);  // the Goals & transcript panel used to stay open over every other tab
   if (v === "pitch") loadPitch();
-  if (v === "leads" || v === "niches" || v === "lead") loadSales().then(() => v === "niches" ? renderNiche() : v === "leads" ? renderLeads() : null);
+  if (v === "leads" || v === "niches") {
+    if (!sales) $(v === "leads" ? "#leadList" : "#nicheBody").innerHTML = `<div class="loading">Loading ${v === "leads" ? "leads" : "niches"}…</div>`;
+    loadSales().then(() => v === "niches" ? renderNiche() : renderLeads());
+  }
   ["leads", "lead", "niches", "pitch", "library", "practice", "tips", "add"].forEach((n) => $("#view-" + n).hidden = n !== v);
-  try { localStorage.setItem("lfs-rebuttals-view", v); } catch (_) {}
+  try { localStorage.setItem("lfs-rebuttals-view", v === "lead" ? "leads" : v); } catch (_) {}
+  updateTabFade();
 }
+// 2026-11-01: arrow keys move between tabs (standard tab-list keyboard behavior)
+$("#tabs").addEventListener("keydown", (e) => {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+  const tabs = [...document.querySelectorAll(".tabs button")], i = tabs.indexOf(document.activeElement);
+  const j = e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : (i + (e.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
+  e.preventDefault(); tabs[j].focus(); showView(tabs[j].dataset.view);
+});
+function updateTabFade() {
+  const t = $("#tabs");
+  t.classList.toggle("more-left", t.scrollLeft > 4);
+  t.classList.toggle("more-right", t.scrollLeft + t.clientWidth < t.scrollWidth - 4);
+}
+$("#tabs").addEventListener("scroll", updateTabFade, {passive: true});
+function syncHeadHeight() { document.documentElement.style.setProperty("--head-h", $("header").offsetHeight + "px"); }
+window.addEventListener("resize", () => { syncHeadHeight(); updateTabFade(); });
 
 // Practice: a random objection at the roughness you picked, weighted toward the likely ones
 $("#next").addEventListener("click", () => {
   const pool = lib.objections.filter((o) => state.practiceLevels.has(o.intensity));
-  if (!pool.length) return;
+  if (!pool.length) { $("#practiceSay").textContent = "No objections at this roughness yet. Pick another level."; return; }
+  $("#reveal").disabled = false;
   let pick = Math.random() * pool.reduce((n, o) => n + likely(o), 0);
   state.current = pool.find((o) => (pick -= likely(o)) <= 0) || pool[0];
   const o = state.current;
-  $("#practiceSay").textContent = `"${o.text}"`;
+  $("#practiceSay").textContent = `“${o.text}”`;
   $("#practiceMeta").innerHTML = `<span class="pill" style="color:${levelColor(o.intensity)}">${o.intensity} ${LEVELS[o.intensity]}</span>`;
   $("#practiceRebs").hidden = true;
   $("#reveal").textContent = "Show rebuttals";
@@ -681,7 +830,8 @@ $("#reveal").addEventListener("click", () => {
   const box = $("#practiceRebs");
   box.hidden = !box.hidden;
   $("#reveal").textContent = box.hidden ? "Show rebuttals" : "Hide rebuttals";
-  box.innerHTML = sortedRebuttals(o).map((r) => `<div class="reb"><div class="reb-head"><span class="style">${esc(r.style)}</span></div><p>${esc(r.text)}</p></div>`).join("");
+  box.innerHTML = sortedRebuttals(o).map((r) => `<div class="reb"><div class="reb-head"><span class="style">${esc(r.style)}</span></div><p>${esc(r.text)}</p></div>`).join("") ||
+    `<p class="count" style="text-align:center">No rebuttals for this one yet. Add one from the On a call tab.</p>`;
 });
 
 $("#addForm").addEventListener("submit", (e) => {
@@ -768,13 +918,14 @@ function renderLeads() {
   const rows = sales.leads.filter((l) => leadMatches(l, salesView.filters)).sort((a, b) => a.grade - b.grade || a.name.localeCompare(b.name));
   $("#leadCount").textContent = `${rows.length.toLocaleString()} leads · worst Health Grade first`;
   $("#leadList").innerHTML = rows.slice(0, salesView.shown).map((l) => {
-    const top = l.problems[l.top_problem];
+    const top = (l.problems || {})[l.top_problem];
     const out = lastOutcome(l.id);
+    // 2026-11-01: spans instead of divs (divs aren't allowed inside a <button>)
     return `<button class="lead-row" data-lead="${esc(l.id)}">
-      <div class="grade ${gradeClass(l.grade)}">${l.grade}<small>grade</small></div>
-      <div><b>${esc(l.name)}</b>${l.maybe_closed ? `<span class="flag">may be closed</span>` : ""}${l.status === "screened" ? `<span class="flag">screened out</span>` : ""}${l.pitch_state === "review" ? `<span class="flag">needs review</span>` : ""}
-        <div class="meta"><span>${esc(l.type)}</span>${l.town ? `<span>· ${esc(l.town)}</span>` : ""}${top ? `<span>· ${esc(top.text)}</span>` : ""}</div></div>
-      <div class="end meta">${l.plan ? `<span class="pill">${PLAN[l.plan]}</span>` : ""}${out !== "none" ? `<span class="pill heard">${OUTCOME[out]}</span>` : ""}</div>
+      <span class="grade ${gradeClass(l.grade)}">${l.grade}<small>grade</small></span>
+      <span><b>${esc(l.name)}</b>${l.maybe_closed ? `<span class="flag">may be closed</span>` : ""}${l.status === "screened" ? `<span class="flag">screened out</span>` : ""}${l.pitch_state === "review" ? `<span class="flag">needs review</span>` : ""}
+        <span class="meta"><span>${esc(l.type)}</span>${l.town ? `<span>· ${esc(l.town)}</span>` : ""}${top ? `<span>· ${esc(top.text)}</span>` : ""}</span></span>
+      <span class="end meta">${l.plan ? `<span class="pill">${PLAN[l.plan] || esc(l.plan)}</span>` : ""}${out !== "none" ? `<span class="pill heard">${OUTCOME[out]}</span>` : ""}</span>
     </button>`;
   }).join("") || `<div class="empty">No leads match these filters.</div>`;
   $("#leadMore").innerHTML = rows.length > salesView.shown ? `<button class="btn" id="showMore" style="margin-top:10px">Show ${Math.min(100, rows.length - salesView.shown)} more</button>` : "";
@@ -893,7 +1044,7 @@ async function saveLog() {
   } catch (e) { toast("Couldn't save. Check your connection."); }
 }
 
-function copyable(label, text) { return `<div class="sub">${label}</div><p style="white-space:pre-wrap">${esc(text)}</p><button class="btn quiet" data-copytext="${esc(text)}">Copy</button>`; }
+function copyable(label, text) { return `<div class="sub">${label}</div><p style="white-space:pre-wrap">${esc(text)}</p><button class="btn" data-copytext="${esc(text)}">Copy</button>`; }
 
 function followUpsHtml() {
   const last = {};
@@ -937,8 +1088,8 @@ function renderOverview() {
       <tbody>${rows.map((r) => `<tr>
         <td><button class="link" data-open-niche="${esc(r.n.type)}">${esc(r.n.type)}</button>${r.n.low_sample ? ` <span class="flag">low sample</span>` : ""}</td>
         <td class="num">${r.n.ready}</td>
-        <td>${esc(r.n.summary[0].label)} <small>(${r.n.summary[0].pct}%)</small></td>
-        <td class="num">${esc(r.n.plan.price.replace(" a month", "/mo"))}</td>
+        <td>${r.n.summary && r.n.summary[0] ? `${esc(r.n.summary[0].label)} <small>(${r.n.summary[0].pct}%)</small>` : "–"}</td>
+        <td class="num">${r.n.plan ? esc(r.n.plan.price.replace(" a month", "/mo")) : "–"}</td>
         <td class="num">${r.logged}</td><td class="num">${pc(r.win)}</td><td class="num">${pc(r.acc)}</td>
         <td>${r.best ? `${esc(r.best.op.style)} <small>(${pc(r.best.rate)}, n=${r.best.n})</small>` : "–"}</td></tr>`).join("")}</tbody></table></div>
     <p class="count" style="margin-top:8px">Win rate counts calls booked and free-trial sign-ups, plus call flow calls that ended on outcome 1 to 6, out of every logged result. Accuracy and best opener are for the old flowchart.</p>`;
@@ -970,6 +1121,13 @@ function renderNiche() {
 
 function renderLead() {
   const l = current.lead, n = sales.niches.find((x) => x.type === l.type);
+  // 2026-11-01: a lead whose niche isn't in the niches table used to crash this page; show a clear message instead
+  if (!n) {
+    $("#leadDetail").innerHTML = `<div class="biz"><h3>${esc(l.name)}</h3><small>${esc(l.type)}</small>
+      <p class="count">There's no "${esc(l.type)}" niche yet, so there's no pitch or call flow for this lead. Rebuild the niches to add it.</p>
+      ${l.phone ? `<div class="contact"><a class="btn call" href="${telHref(l.phone)}">📞 Call ${esc(l.phone)}</a></div>` : ""}</div>`;
+    return;
+  }
   $("#nicheBody").innerHTML = "";  // only one page may hold the call flow (#cf); the Niches tab redraws when opened
   const lp = current.pitch || {}, pol = lp.polished, tpl = lp.template;
   if (!current.log || current.log.lead !== l.id) startLog(n, l, l.status === "ready" ? "personalized" : "general");
@@ -1000,12 +1158,13 @@ function renderLead() {
     <div class="biz"><h3>${esc(l.name)}</h3>
       <small>${esc(l.type)}${l.town ? ` · ${esc(l.town)}` : ""} · ${l.reviews ? `${l.rating}★ from ${l.reviews} reviews` : "no reviews"} · Health Grade ${l.grade} · ${esc(SITE[l.site])} · ${esc(l.confidence || "not researched")} confidence</small>
       ${l.maybe_closed ? `<p><span class="flag">May be closed</span> Keep it short and low-pressure.</p>` : ""}
-      <div class="meta" style="margin-top:6px">${l.owner ? `<span>Owner: ${esc(l.owner)}</span>` : ""}
-        ${l.phone ? `<a href="tel:${esc(l.phone.replace(/[^\d+]/g, ""))}">${esc(l.phone)}</a>` : ""}
-        ${l.email ? `<a href="mailto:${esc(l.email)}">${esc(l.email)}</a>` : `<span>No usable email</span>`}
-        ${l.website ? `<a href="${esc(l.website)}" target="_blank" rel="noopener">Website</a>` : ""}
-        ${l.maps ? `<a href="${esc(l.maps)}" target="_blank" rel="noopener">Google Maps</a>` : ""}</div>
-      <div>${Object.values(l.problems).map((p) => `<span class="pain">${esc(p.text)} <small>(${esc(p.col)})</small></span>`).join("")}</div>
+      ${l.owner ? `<div class="meta" style="margin-top:6px"><span>Owner: <b style="color:var(--ink)">${esc(l.owner)}</b></span></div>` : ""}
+      <!-- 2026-11-01: contact links are now real buttons (the phone number was 12px link text) -->
+      <div class="contact">${l.phone ? `<a class="btn call" href="${telHref(l.phone)}">📞 Call ${esc(l.phone)}</a>` : ""}
+        ${l.email ? `<a class="btn" href="mailto:${esc(l.email)}">✉ ${esc(l.email)}</a>` : `<span class="btn quiet" style="cursor:default">No usable email</span>`}
+        ${safeUrl(l.website) ? `<a class="btn" href="${esc(safeUrl(l.website))}" target="_blank" rel="noopener">Website ↗</a>` : ""}
+        ${safeUrl(l.maps) ? `<a class="btn" href="${esc(safeUrl(l.maps))}" target="_blank" rel="noopener">Google Maps ↗</a>` : ""}</div>
+      <div>${Object.values(l.problems || {}).map((p) => `<span class="pain">${esc(p.text)} <small>(${esc(p.col)})</small></span>`).join("")}</div>
       ${l.plan_text ? `<p style="margin:8px 0 0;font-size:13.5px">Suggested plan: <b>${esc(l.plan_text)}</b> <small>(AO)</small></p>` : ""}</div>
     ${pitchHtml}
     ${facts.length ? `<div class="script"><h3>Research notes (internal)</h3>${facts.map(([k, v, c]) => `<div class="sub">${k} <code>${c}</code></div><p>${esc(v)}</p>`).join("")}</div>` : ""}
@@ -1026,6 +1185,11 @@ document.addEventListener("change", (e) => {
     salesView.shown = 100; renderLeads();
     document.querySelector("#leadFilters details").open = true;
   }
+});
+// 2026-11-01: the Niche filter menu closes when you tap anywhere else (it stayed open)
+document.addEventListener("click", (e) => {
+  const d = document.querySelector("#leadFilters details[open]");
+  if (d && !d.contains(e.target)) d.open = false;
 });
 document.addEventListener("click", async (e) => {
   const t = e.target.closest("button");
@@ -1049,6 +1213,9 @@ document.addEventListener("click", async (e) => {
   else if (t.id === "undoLog") {
     const last = sales.outcomes[sales.outcomes.length - 1];
     if (!last) { toast("Nothing to undo"); return; }
+    // 2026-11-01: confirm first and say exactly which result goes (it removes the newest result from any niche or lead)
+    const who = last.lead && sales.byId[last.lead] ? sales.byId[last.lead].name : `${last.niche} (general pitch)`;
+    if (!(await ask({title: "Remove the last saved result?", msg: `${who} · ${OUTCOME[last.outcome] || last.outcome} · ${last.date || ""}`, ok: "Remove", danger: true}))) return;
     try { await DB.deleteOutcome(last.id); sales.outcomes.pop(); toast("Removed the last saved result"); rerender(); }
     catch (_) { toast("Couldn't undo. Check your connection."); }
   }
@@ -1131,9 +1298,9 @@ function renderBiz() {
   $("#bizCard").innerHTML = `<div class="biz">
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><h3>${esc(b.name)}</h3><button class="btn quiet" data-clear-biz>Clear</button></div>
     <small>${esc(b.type)} · ${b.reviews ? `${b.rating}★ from ${b.reviews} reviews` : "no reviews"}${t ? ` (typical ${esc(b.type.toLowerCase())} nearby: ${t.median_reviews})` : ""}</small>
-    <div class="meta" style="margin-top:6px">${b.phone ? `<a href="tel:${esc(b.phone.replace(/[^\d+]/g, ""))}">${esc(b.phone)}</a>` : ""}
-      ${b.website ? `<a href="${esc(b.website)}" target="_blank" rel="noopener">Website</a>` : ""}
-      ${b.maps ? `<a href="${esc(b.maps)}" target="_blank" rel="noopener">Google Maps</a>` : ""}</div>
+    <div class="contact">${b.phone ? `<a class="btn call" href="${telHref(b.phone)}">📞 Call ${esc(b.phone)}</a>` : ""}
+      ${safeUrl(b.website) ? `<a class="btn" href="${esc(safeUrl(b.website))}" target="_blank" rel="noopener">Website ↗</a>` : ""}
+      ${safeUrl(b.maps) ? `<a class="btn" href="${esc(safeUrl(b.maps))}" target="_blank" rel="noopener">Google Maps ↗</a>` : ""}</div>
     <div>${b.pains.length ? b.pains.map((p) => `<span class="pain">${esc(biz.pains[p] ? biz.pains[p].label : p)}</span>`).join("") : `<span class="count">No obvious problems found. Lead with questions.</span>`}</div>
     ${recs.length ? `<p style="margin:8px 0 0;font-size:13.5px">Best fit: ${recs.map((id) => `<b>${esc(names[id])}</b>`).join(", ")}</p>` : ""}
   </div>`;
@@ -1146,7 +1313,7 @@ function renderPitch() {
   const s = pitch.services.find((x) => x.id === pitchState.svc) || pitch.services[0];
   const objs = lib.objections.filter((o) => (o.services || []).includes(s.id)).sort((a, c) => likely(c) - likely(a));
   const block = (title, html) => `<div class="script"><h3>${title}</h3>${html}</div>`;
-  const copyBtn = (text) => `<button class="btn quiet" data-copy="${esc(text)}">Copy</button>`;
+  const copyBtn = (text) => `<button class="btn" data-copy="${esc(text)}">Copy</button>`;
   const say = (text) => `<p>${fill(text, s)}</p>`;
   $("#pitchBody").innerHTML = `
     <div class="svc-head"><h2>${esc(s.name)}</h2><p><b>${esc(s.plan)}</b> · ${esc(s.one_liner)}</p><p class="count">${esc(s.best_for)}</p></div>
@@ -1156,7 +1323,7 @@ function renderPitch() {
     ${block("3. Questions to ask", `<ol>${s.questions.map((q) => `<li>${fill(q, s)}</li>`).join("")}</ol>`)}
     ${block("4. Common objections for this service", objs.length ? objs.slice(0, 12).map((o) => {
       const r = sortedRebuttals(o)[0];
-      return `<div class="obj-mini"><button class="link" data-jump="${o.id}">"${esc(o.text)}" →</button>${r ? `<p>${fill(r.text, s)}</p>` : ""}</div>`;
+      return `<div class="obj-mini"><button class="link" data-jump="${esc(o.id)}">${said(o.text)} →</button>${r ? `<p>${fill(r.text, s)}</p>` : ""}</div>`;
     }).join("") : `<p class="count">None tagged yet.</p>`)}
     ${block("5. Book the meeting", s.close.map((c) => say(c)).join(""))}
     ${block("Voicemail", say(s.voicemail) + copyBtn(s.voicemail))}
@@ -1348,7 +1515,7 @@ function cfRender() {
   const box = $("#cf"), F = cfFlow(cf.niche);
   if (!box || !F) return;
   F.memo = null;
-  document.documentElement.style.setProperty("--head-h", $("header").offsetHeight + "px");
+  syncHeadHeight();
   const last = cf.path[cf.path.length - 1];
   const rows = cf.path.length + (last && F.nodes[last].type === "outcome" ? 0 : 1);
   let html = "";
@@ -1439,7 +1606,7 @@ function cfPanelRender(F) {
   }
   const last = F.nodes[cf.path[cf.path.length - 1]];
   const who = (n) => (n.type === "prospect" ? "Prospect" : n.type === "outcome" ? "Result" : "Giles");
-  panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><b class="count">Goals &amp; transcript</b><button class="btn quiet" id="cfPanelClose" aria-label="Close">×</button></div>
+  panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><b class="count">Goals &amp; transcript</b><button class="btn" id="cfPanelClose" aria-label="Close panel" style="font-size:18px;min-width:40px">×</button></div>
     <h3>Win conditions, best to worst</h3>
     <ul class="cf-tiers">${CF_ORDER.map((tier) => cfData.tiers.find((t) => t.tier === tier)).filter(Boolean).map((t) => `<li class="${last && last.tier === t.tier ? "reached" : ""}"><span class="n" style="background:${cfTierColor(t.tier)}">${t.tier}</span>
       <span>${esc(t.label)}${t.is_main_goal ? `<span class="cf-goal">★ MAIN GOAL</span>` : ""}</span></li>`).join("")}</ul>
@@ -1466,6 +1633,9 @@ async function cfLogCall() {
 async function cfUndo() {
   const last = cfData.calls[cfData.calls.length - 1];
   if (!last) { toast("Nothing to undo"); return; }
+  // 2026-11-01: confirm first; this removes the newest logged call from any niche, not just the one on screen
+  const who = last.lead && sales && sales.byId[last.lead] ? sales.byId[last.lead].name : `${last.niche} (general)`;
+  if (!(await ask({title: "Remove the last logged call?", msg: `${who} · outcome #${last.final_tier} · ${last.date || ""}`, ok: "Remove", danger: true}))) return;
   try {
     await DB.deleteCall(last.id);
     cfData.calls.pop();
@@ -1490,33 +1660,45 @@ document.addEventListener("click", (e) => {
   else if (t.id === "cfReset") { cf.path = []; cf.notes = ""; cfRender(); }
   else if (t.id === "cfLog") cfLogCall();
   else if (t.id === "cfUndo") cfUndo();
-  else if (t.id === "cfPanelBtn" || t.id === "cfPanelClose") $("#cfPanel").classList.toggle("open");
+  else if (t.id === "cfPanelBtn") cfPanelOpen(true);
+  else if (t.id === "cfPanelClose") cfPanelOpen(false);
 });
+// 2026-11-01: one place opens/closes the panel; a dimmed backdrop closes it on tap, Escape closes it, and switching tabs closes it
+function cfPanelOpen(open) {
+  const p = $("#cfPanel"); if (!p) return;
+  p.classList.toggle("open", open); $("#cfBackdrop").classList.toggle("open", open);
+  if (open) $("#cfPanelClose").focus();
+}
+$("#cfBackdrop").addEventListener("click", () => cfPanelOpen(false));
 document.addEventListener("input", (e) => { if (e.target.id === "cfNotes") cf.notes = e.target.value; });
 document.addEventListener("keydown", (e) => {
-  if (e.key.toLowerCase() !== "t" || e.metaKey || e.ctrlKey || e.altKey || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
-  if ($("#cf") && $("#cf").offsetParent && $("#cfPanel")) $("#cfPanel").classList.toggle("open");
+  if (e.key === "Escape" && $("#cfPanel") && $("#cfPanel").classList.contains("open")) { cfPanelOpen(false); return; }
+  if (e.key.toLowerCase() !== "t" || e.metaKey || e.ctrlKey || e.altKey || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName) || $("#ask").open) return;
+  if ($("#cf") && $("#cf").offsetParent && $("#cfPanel")) cfPanelOpen(!$("#cfPanel").classList.contains("open"));
 });
 window.addEventListener("resize", () => { if ($("#cf")) requestAnimationFrame(cfWires); });
 
 // ---------- Start: sign in, then load ----------
 async function start() {
   $("#signin").hidden = true; $("#signOut").hidden = false;
+  render();  // 2026-11-01: shows the loading spinner right away instead of a blank page
+  syncHeadHeight(); updateTabFade();
   try { settings = {founding_offer: false, ...(await DB.settings())}; } catch (_) {}
   try { const v = localStorage.getItem("lfs-rebuttals-view"); if (v) showView(v); } catch (_) {}
   load();
 }
 $("#signinForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const f = e.target;
-  $("#signinMsg").textContent = "Signing in…";
+  const f = e.target, btn = f.querySelector("button"), msg = $("#signinMsg");
+  msg.textContent = "Signing in…"; msg.classList.remove("err"); btn.disabled = true;  // 2026-11-01: no double submits; errors in red
   const {error} = await sb.auth.signInWithPassword({email: f.email.value.trim(), password: f.password.value});
-  if (error) { $("#signinMsg").textContent = "That didn't work: " + error.message; return; }
-  f.password.value = ""; $("#signinMsg").textContent = "";
+  btn.disabled = false;
+  if (error) { msg.textContent = "That didn't work: " + error.message; msg.classList.add("err"); return; }
+  f.password.value = ""; msg.textContent = "";
   start();
 });
 $("#signOut").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
-sb.auth.getSession().then(({data}) => { if (data.session) start(); else $("#signin").hidden = false; });
+sb.auth.getSession().then(({data}) => { if (data.session) start(); else { $("#signin").hidden = false; $("#siEmail").focus(); } });
 </script>
 </body>
 </html>
