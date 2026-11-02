@@ -1,8 +1,10 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
+<script>/* 2026-11-01: light mode by default; the sun/moon button in the header switches to dark and remembers it */
+try { if (localStorage.getItem("lfs-theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (_) {}</script>
 <head>
 <meta charset="utf-8">
-<meta name="lfs-build" content="e5256ad">
+<meta name="lfs-build" content="29f64cd">
 <!--
   2026-11-01 polish pass (from a full click-through test on desktop 1440px + phone 390px). Every change is marked "2026-11-01" in place.
   Bugs fixed: blank page when the app reopened on a lead; Services showed "None tagged yet" when reopened; the Goals & transcript
@@ -14,11 +16,13 @@
   only http(s) links from the sheet are clickable.
 -->
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Rebuttal Library</title>
+<title>Pitch Software</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Pitch">
 <meta name="theme-color" content="#F6F3ED">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -246,7 +250,7 @@
     --t7: var(--l3); --t8: color-mix(in srgb, var(--l3) 50%, var(--l4)); --t9: var(--l4);
     --t10: color-mix(in srgb, var(--l4) 50%, var(--l5)); --t11: var(--l5); --t12: color-mix(in srgb, var(--l3) 30%, var(--l4)); --head-h: 64px;
   }
-  .cf { position: relative; left: 50%; width: min(1500px, calc(100vw - 32px)); margin: 14px 0 0 calc(min(1500px, calc(100vw - 32px)) / -2); }
+  .cf { position: relative; left: 50%; width: min(1240px, calc(100vw - 40px)); margin: 14px 0 0 calc(min(1240px, calc(100vw - 40px)) / -2); }
   .cf-bar-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .cf-bar-top h3 { font-size: 20px; }
   .cf-controls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
@@ -266,50 +270,60 @@
   .cf-stack-lab { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; font-size: 11px; color: var(--muted); margin-top: 4px; }
   .cf-src { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; border-radius: 6px; padding: 1px 6px; white-space: nowrap; background: color-mix(in srgb, var(--l3) 22%, transparent); color: var(--ink); }
   .cf-src.house { background: color-mix(in srgb, var(--green) 22%, transparent); }
-  .cf-track { position: relative; display: grid; gap: 40px; padding: 20px 0 40vh; overflow: hidden; }
-  .cf-wires { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
-  .cf-row { position: relative; z-index: 1; display: grid; grid-template-columns: 160px 1fr; gap: 16px; align-items: start; }
-  .cf-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 12px 0 0; border-right: 2px solid var(--line); min-height: 40px; }
-  .cf-step { width: 24px; height: 24px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 700; display: grid; place-items: center; }
-  .cf-title { font-family: Fraunces, Georgia, serif; font-size: 16px; color: var(--ink); flex: 1 1 90px; line-height: 1.2; }
-  .cf-hint { flex-basis: 100%; font-size: 11.5px; color: var(--muted); line-height: 1.35; }
-  .cf-cards { display: flex; gap: 10px; justify-content: center; align-items: flex-start; }
-  .cf-card { flex: 1 1 0; min-width: 0; max-width: 280px; text-align: left; cursor: pointer; position: relative; display: block; background: var(--card); color: var(--text);
-    border: 1.5px solid var(--line); border-radius: 14px; padding: 10px 12px 10px 15px; transition: box-shadow .12s, border-color .12s, opacity .2s; }
+  /* 2026-11-01 call flow redesign: each step is a row of cards that WRAPS (every option stays fully visible at any width).
+     Once you pick a card it becomes one big highlighted card; the other options become a wrapping row of "switch to" chips.
+     Replaces the old center-pick layout where unpicked cards shrank, grayed out and got cut off at the edges. */
+  .cf-track { position: relative; display: grid; gap: 22px; padding: 18px 0 30vh; }
+  .cf-row { position: relative; padding-left: 46px; }
+  .cf-row::before { content: ""; position: absolute; left: 15px; top: 34px; bottom: -22px; width: 2px; background: var(--line); }
+  .cf-row:last-child::before { display: none; }
+  .cf-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; margin-bottom: 10px; min-height: 32px; }
+  .cf-step { position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 14px; font-weight: 700; display: grid; place-items: center; }
+  .cf-row.has-pick .cf-step { background: var(--green); color: var(--on-green); }
+  .cf-title { font-family: Fraunces, Georgia, serif; font-size: 19px; color: var(--ink); line-height: 1.3; padding-top: 3px; }
+  .cf-hint { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+  .cf-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr)); gap: 10px; align-items: stretch; }
+  .cf-card { text-align: left; cursor: pointer; position: relative; display: flex; flex-direction: column; background: var(--card); color: var(--text); width: 100%;
+    border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px 12px 18px; transition: box-shadow .12s, border-color .12s, transform .12s; }
   .cf-card span { display: block; }
   .cf-card .fill, .cf-card .blank { display: inline; }
-  .cf-card::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 5px; border-radius: 0 4px 4px 0; background: var(--accent); }
-  .cf-card:hover { box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 12%, transparent); }
-  .cf-card.picked { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent); }
-  /* Once a card in a row is picked it moves to the center; the others shrink, gray out and fill the sides */
-  .cf-row.has-pick .cf-cards { display: grid; grid-template-columns: 1fr min(340px, 36%) 1fr; align-items: center; }
-  .cf-side { display: flex; gap: 8px; align-items: center; min-width: 0; }
-  .cf-side.left { justify-content: flex-end; } .cf-side.right { justify-content: flex-start; }
-  .cf-row.has-pick .cf-card.picked { max-width: none; }
-  .cf-row.has-pick .cf-card:not(.picked) { flex: 1 1 0; max-width: 170px; opacity: .5; filter: grayscale(.9); transform: scale(.94); transition: opacity .2s, filter .2s, transform .2s; }
-  .cf-row.has-pick .cf-card:not(.picked):hover { opacity: 1; filter: none; transform: none; }
+  .cf-card::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 5px; border-radius: 0 4px 4px 0; background: var(--accent); }
+  .cf-card:hover { border-color: var(--accent); box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 12%, transparent); transform: translateY(-1px); }
+  /* The pick: big, tinted, thick accent border and a "✓" badge so it's obvious what you chose */
+  .cf-picked { max-width: 760px; }
+  .cf-card.picked { cursor: default; border: 2.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--card)); padding: 16px 18px 16px 22px;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 22%, transparent); transform: none; }
+  .cf-card.picked::before { width: 7px; top: 14px; bottom: 14px; }
+  .cf-chosen { display: inline-flex !important; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+    background: var(--ink); color: var(--bg); border-radius: 999px; padding: 3px 10px; }
   .cf-row.just-picked .cf-card.picked { animation: cfPop .28s ease; }
-  @keyframes cfPop { from { transform: scale(.92); opacity: .6; } to { transform: none; opacity: 1; } }
-  .cf-card .cf-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 5px; }
-  .cf-card .who { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  @keyframes cfPop { from { transform: scale(.97); opacity: .6; } to { transform: none; opacity: 1; } }
+  .cf-others { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+  .cf-others > span { font-size: 12px; font-weight: 700; color: var(--muted); margin-right: 2px; }
+  .cf-alt { display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); border: 1px solid var(--line); border-left: 4px solid var(--accent); background: var(--card);
+    border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 13.5px; font-weight: 600; color: var(--ink); cursor: pointer; text-align: left; }
+  .cf-alt:hover { border-color: var(--accent); }
+  .cf-alt .cf-pill, .cf-alt .cf-rank { font-size: 11px; }
+  .cf-card .cf-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+  .cf-card .who { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
   .cf-card .badges { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
   /* 2026-11-01: pill background darkened ~22% so white text passes contrast on the yellow/amber accents (was ~3:1) */
-  .cf-pill { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 78%, var(--pill-shade)); color: var(--on-green); white-space: nowrap; }
-  .cf-rank { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--tan); color: var(--ink); white-space: nowrap; }
+  .cf-pill { font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 78%, var(--pill-shade)); color: var(--on-green); white-space: nowrap; }
+  .cf-rank { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: var(--tan); color: var(--ink); white-space: nowrap; }
   .cf-rank.best { background: var(--green); color: var(--on-green); }
-  .cf-card .cf-label { font-weight: 700; font-size: 14px; line-height: 1.3; color: var(--ink); margin-bottom: 4px; }
-  .cf-card .cf-text { font-size: 13px; line-height: 1.5; color: var(--ink); }
-  .cf-card .cf-text.say { font-style: italic; background: var(--tan); border-radius: 8px; padding: 5px 8px; }
-  .cf-card .cf-meter { height: 5px; background: var(--tan); border-radius: 4px; margin-top: 8px; overflow: hidden; }
+  .cf-card .cf-label { font-weight: 700; font-size: 15px; line-height: 1.3; color: var(--ink); margin-bottom: 6px; }
+  .cf-card .cf-text { font-size: 15px; line-height: 1.5; color: var(--ink); flex: 1; }
+  .cf-card.picked .cf-label { font-size: 17px; }
+  .cf-card.picked .cf-text { font-size: 17.5px; line-height: 1.5; }
+  /* 2026-11-01: what the prospect says is a speech bubble in full-size, upright, dark text (was 13px italic on tan) */
+  .cf-card .cf-text.say { position: relative; font-style: normal; font-weight: 500; background: var(--bg); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 10px 12px; }
+  .cf-card.picked .cf-text.say { background: var(--card); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+  .cf-card .cf-meter { height: 5px; background: var(--tan); border-radius: 4px; margin-top: 10px; overflow: hidden; flex: none; }
   .cf-card .cf-meter i { display: block; height: 100%; background: var(--accent); }
-  .cf-card.compact { padding: 7px 10px 7px 14px; }
-  .cf-card.compact .cf-text, .cf-card.compact .cf-meter, .cf-card.compact .who, .cf-card.compact .cf-src, .cf-card.compact .cf-ph, .cf-card.compact .cf-tip, .cf-card.compact .cf-hint-lead { display: none; }
-  .cf-card .cf-tip { font-size: 12px; color: var(--muted); margin-top: 6px; } .cf-card .cf-tip b { color: var(--green); }
-  .cf-card .cf-hint-lead { font-size: 12px; margin-top: 6px; padding: 5px 8px; border-radius: 8px; background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--ink); }
-  .cf-card.compact .cf-top { justify-content: flex-end; margin-bottom: 3px; }
-  .cf-card.compact .cf-label { font-size: 13px; margin: 0; }
+  .cf-card .cf-tip { font-size: 13px; color: var(--muted); margin-top: 8px; } .cf-card .cf-tip b { color: var(--green); }
+  .cf-card .cf-hint-lead { font-size: 13px; margin-top: 8px; padding: 6px 9px; border-radius: 8px; background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--ink); }
   .cf-ph { display: inline-block !important; font-size: 9.5px; font-weight: 700; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 0 5px; margin-left: 4px; vertical-align: 2px; }
-  .cf-out { flex: 0 1 460px; text-align: center; background: color-mix(in srgb, var(--accent) 10%, var(--card)); border: 1.5px solid var(--accent); border-radius: 14px; padding: 14px 16px; }
+  .cf-out { max-width: 560px; text-align: center; background: color-mix(in srgb, var(--accent) 10%, var(--card)); border: 1.5px solid var(--accent); border-radius: 14px; padding: 14px 16px; }
   .cf-out .tier { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink); }
   .cf-out .big { font-family: Fraunces, Georgia, serif; font-size: 24px; color: var(--ink); margin: 2px 0; }
   .cf-out .crm { margin-top: 10px; font-size: 12.5px; background: var(--card); border-radius: 10px; padding: 8px 10px; text-align: left; color: var(--text); }
@@ -331,16 +345,12 @@
     .cf-tracker { grid-template-columns: auto 1fr; gap: 6px 12px; padding: 8px 12px; }
     .cf-tracker > :nth-child(2), .cf-tracker > :nth-child(3), .cf-stack-lab { display: none; }
     .cf-big { font-size: 24px; }
-    .cf-row { grid-template-columns: 1fr; gap: 8px; }
-    .cf-head { border-right: 0; border-bottom: 2px solid var(--line); padding: 0 0 6px; min-height: 0; }
-    .cf-cards { flex-direction: column; align-items: stretch; }
-    .cf-row.has-pick .cf-cards { grid-template-columns: 1fr; gap: 8px; }
-    .cf-row.has-pick .cf-card.picked { order: -1; }  /* on a phone the pick goes to the top */
-    .cf-side { flex-direction: column; align-items: stretch; }
-    .cf-card, .cf-row.has-pick .cf-card:not(.picked) { max-width: none; transform: none; }
-    .cf-out { flex-basis: auto; }
-    .cf-wires { display: none; }
-    .cf-track { gap: 22px; }
+    .cf-row { padding-left: 0; }
+    .cf-row::before { display: none; }
+    .cf-head { padding-left: 40px; position: relative; }
+    .cf-step { width: 30px; height: 30px; }
+    .cf-title { font-size: 17px; }
+    .cf-card.picked .cf-text { font-size: 16.5px; }
   }
   @media (max-width: 600px) {
     .branch { grid-template-columns: 1fr; }
@@ -362,29 +372,265 @@
     .form .two { grid-template-columns: 1fr; }
     .practice .say { font-size: 22px; }
   }
+
+  /* ===== 2026-11-01 friendly redesign: tabs with icons, Today, More, quick search, lead page folds, help text ===== */
+  .tabs button { display: inline-flex; align-items: center; gap: 6px; }
+  .tabs button svg { width: 18px; height: 18px; flex: none; }
+  .theme-btn { font-size: 16px; min-width: var(--tap); padding: 4px 8px; }
+  .page-title { font-size: 26px; margin: 20px 0 4px; }
+  .help { font-size: 13px; color: var(--muted); line-height: 1.45; margin: 4px 0 0; }
+  .help b { color: var(--ink); }
+  .back { margin: 12px 0 0 -8px; }
+  .more-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 10px; margin-top: 14px; }
+  .more-card { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; display: grid; gap: 4px; color: var(--text); }
+  .more-card b { font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; color: var(--ink); }
+  .more-card span { font-size: 13.5px; line-height: 1.45; }
+  .more-card:hover { border-color: var(--green); }
+  /* Today */
+  .hero { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 20px; margin-top: 18px; }
+  .hero h2 { font-size: 26px; }
+  .hero .date { color: var(--muted); font-size: 14px; margin: 2px 0 14px; }
+  .hero .btn.big { min-height: 52px; font-size: 16px; padding: 10px 20px; width: 100%; justify-content: center; text-align: center; }
+  .hero .next-why { font-size: 13px; color: var(--muted); margin: 8px 0 0; text-align: center; }
+  .sec-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 24px 0 8px; }
+  .sec-title h2 { font-size: 20px; }
+  .fu { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+  .fu .when { font-weight: 700; color: var(--ink); font-size: 13px; white-space: nowrap; }
+  .fu .when.late { color: var(--danger); }
+  .fu b { color: var(--ink); } .fu small { color: var(--muted); display: block; }
+  .quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 10px; }
+  /* Lead page */
+  .ask-for { margin: 10px 0 0; font-size: 17px; color: var(--ink); }
+  .ask-for b { font-family: Fraunces, Georgia, serif; font-size: 21px; font-weight: 600; }
+  .ask-for span { font-size: 13px; color: var(--muted); }
+  .ask-for.muted { font-size: 14px; color: var(--muted); }
+  .fold { background: var(--card); border: 1px solid var(--line); border-radius: 16px; margin-top: 12px; overflow: hidden; }
+  .fold > summary { list-style: none; cursor: pointer; padding: 14px 16px; min-height: 52px; display: flex; align-items: center; gap: 10px;
+    font-family: Fraunces, Georgia, serif; font-size: 17px; font-weight: 600; color: var(--ink); }
+  .fold > summary::-webkit-details-marker { display: none; }
+  .fold > summary span { font-family: "Plus Jakarta Sans", sans-serif; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+  .fold > summary::after { content: "▾"; margin-left: auto; font-size: 16px; color: var(--muted); transition: transform .15s; }
+  .fold[open] > summary::after { transform: rotate(180deg); }
+  .fold-body { padding: 0 16px 16px; }
+  .fold-body .script { margin-top: 0; }
+  /* Quick search ("They said…") */
+  .fab { position: fixed; right: max(16px, env(safe-area-inset-right)); bottom: 20px; z-index: 12; background: var(--ink); color: var(--bg); border: 0; border-radius: 999px;
+    padding: 12px 18px; min-height: 48px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 8px 24px rgba(30, 20, 25, .3); }
+  .fab:hover { filter: brightness(1.15); }
+  .qs { width: min(640px, calc(100vw - 24px)); max-height: min(80vh, 720px); padding: 14px; margin-top: 8vh; }
+  .qs-top { display: flex; gap: 8px; position: sticky; top: -14px; background: var(--card); padding-bottom: 8px; }
+  .qs-top input { flex: 1; min-width: 0; padding: 12px 14px; font-size: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--ink); }
+  .qs-hit { border-top: 1px solid var(--line); padding: 12px 2px; }
+  .qs-hit h3 { font-size: 16px; }
+  .qs-hit .style { display: block; margin-top: 6px; }
+  .qs-hit p { margin: 2px 0 6px; color: var(--ink); font-size: 16px; line-height: 1.5; }
+  .qs-hit .actions { margin-top: 4px; }
+  @media (max-width: 700px) {
+    /* Phone: bottom tab bar under your thumb. backdrop-filter is turned off because it would trap the fixed bar inside the header. */
+    header { backdrop-filter: none; background: var(--bg); }
+    .head .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 15; width: auto; order: 0; border-radius: 0; background: var(--card); border-top: 1px solid var(--line);
+      padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); justify-content: space-around; gap: 0; -webkit-mask-image: none; mask-image: none; box-shadow: 0 -4px 16px rgba(30, 20, 25, .06); }
+    .head .tabs button { flex: 1 1 0; flex-direction: column; gap: 2px; font-size: 11px; padding: 6px 2px; min-height: 52px; border-radius: 12px; }
+    .head .tabs button svg { width: 22px; height: 22px; }
+    .head .tabs button[aria-selected="true"] { background: color-mix(in srgb, var(--green) 14%, transparent); color: var(--green); }
+    .head h1 { margin-right: auto; }
+    body { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+    .toast { bottom: calc(140px + env(safe-area-inset-bottom)); }
+    /* 2026-11-02: a round icon button on phones; the full "They said…" pill covered the bottom of the call cards */
+    .fab { bottom: calc(80px + env(safe-area-inset-bottom)); right: 12px; width: 52px; height: 52px; min-height: 0; padding: 0; font-size: 22px; display: grid; place-items: center; }
+    .fab .fab-text { display: none; }
+    body { padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
+    .cf-panel { bottom: 0; z-index: 25; } .cf-backdrop { z-index: 24; }
+    .hero h2 { font-size: 23px; }
+    .kbd { display: none; }
+    .page-title { font-size: 23px; }
+  }
+
+  /* ===== 2026-11-02 pitch software: Flow chart / Prospects / Practice / Learn ===== */
+  .seg-tabs { display: flex; flex-wrap: wrap; gap: 4px; background: var(--tan); padding: 4px; border-radius: 14px; margin-top: 10px; width: fit-content; max-width: 100%; }
+  .seg-tabs button { border: 0; background: none; padding: 8px 14px; min-height: var(--tap); border-radius: 10px; font-weight: 600; font-size: 14px; color: var(--text); cursor: pointer; }
+  .seg-tabs button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 4px rgba(30, 20, 25, .12); }
+  .who-strip { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; background: var(--card); border: 1px solid var(--line);
+    border-left: 5px solid var(--green); border-radius: 14px; padding: 12px 16px; margin-top: 14px; }
+  .who-strip > div:first-child { display: grid; gap: 2px; min-width: 0; }
+  .who-strip b { font-family: Fraunces, Georgia, serif; font-size: 19px; font-weight: 600; color: var(--ink); }
+  .who-strip.general { border-left-color: var(--line); }
+  .big-cta { min-height: 48px !important; font-size: 15px !important; padding: 10px 20px !important; margin-top: 14px; }
+  .biz-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .score-badge { flex: none; text-align: center; border: 2px solid currentColor; border-radius: 14px; padding: 6px 10px; min-width: 64px; }
+  .score-badge b { display: block; font-family: Fraunces, Georgia, serif; font-size: 26px; line-height: 1; }
+  .score-badge span { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+  .score-badge.bad { color: var(--l5); } .score-badge.mid { color: var(--l3); } .score-badge.good { color: var(--l1); }
+  /* 2026-11-02: one-line niche picker on the Flow chart tab */
+  .niche-line { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 10px; }
+  .niche-pick { position: relative; }
+  .niche-pick > summary { list-style: none; cursor: pointer; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; min-height: var(--tap);
+    display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--ink); }
+  .niche-pick > summary::-webkit-details-marker { display: none; }
+  .niche-pick > summary::after { content: "▾"; color: var(--muted); font-weight: 400; }
+  .niche-pick .menu { position: absolute; z-index: 8; top: calc(100% + 4px); left: 0; width: min(340px, calc(100vw - 32px)); max-height: 60vh; overflow: auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: 12px; padding: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.14); display: grid; gap: 2px; }
+  .niche-pick .menu button { text-align: left; border: 0; background: none; padding: 8px 10px; min-height: var(--tap); border-radius: 8px; cursor: pointer; color: var(--ink); font-size: 14.5px; }
+  .niche-pick .menu button:hover { background: var(--tan); }
+  .niche-pick .menu button[aria-pressed="true"] { background: color-mix(in srgb, var(--green) 14%, transparent); font-weight: 700; }
+  .niche-pick .menu small { color: var(--muted); font-weight: 500; }
+  /* Prospect list rows: open button + Spoke check side by side */
+  .lead-item { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: stretch; }
+  .lead-item.done .lead-row { opacity: .62; }
+  .spoke-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--line); background: var(--card); color: var(--muted);
+    border-radius: 14px; padding: 6px 12px; min-width: 72px; cursor: pointer; font-weight: 700; font-size: 18px; }
+  .lead-item .spoke-btn { flex-direction: column; gap: 3px; }
+  .spoke-btn small { font-size: 11px; font-weight: 600; }
+  .spoke-btn .box { width: 20px; height: 20px; border: 2px solid var(--muted); border-radius: 6px; }
+  .spoke-btn:hover { border-color: var(--green); color: var(--ink); }
+  .spoke-btn[aria-pressed="true"] { background: color-mix(in srgb, var(--green) 14%, var(--card)); border-color: var(--green); color: var(--green); }
+  .contact .spoke-btn { flex-direction: row; font-size: 13.5px; min-height: var(--tap); border-radius: 999px; padding: 5px 14px; }
+  .contact .spoke-btn small { color: var(--muted); }
+  /* Call script on the prospect page */
+  .call-script { padding: 16px 18px; }
+  .call-script > h3 { font-size: 20px; margin-bottom: 10px; }
+  .svc-pick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .svc-card { background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+  .svc-card p { margin: 6px 0 0; }
+  .svc-name { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .svc-name b { font-family: Fraunces, Georgia, serif; font-size: 18px; font-weight: 600; color: var(--ink); }
+  .steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 0; }
+  .step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; position: relative; padding-bottom: 16px; }
+  .step::before { content: ""; position: absolute; left: 16px; top: 34px; bottom: 0; width: 2px; background: var(--line); }
+  .step:last-child::before { display: none; }
+  .step-n { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: var(--on-green); font-weight: 800; display: grid; place-items: center; font-size: 15px; }
+  .step-body h4 { margin: 5px 0 0; font-family: Fraunces, Georgia, serif; font-weight: 600; font-size: 17px; color: var(--ink); }
+  .step-body .help { margin: 0 0 6px; }
+  .line { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+  .line p { margin: 2px 0 6px; color: var(--ink); font-size: 16px; line-height: 1.5; }
+  .line .btn { margin: 0; }
+  .asks { margin: 4px 0 0; padding-left: 18px; color: var(--ink); font-size: 16px; line-height: 1.6; }
+  .more-lines { margin-top: 8px; }
+  .more-lines > summary { cursor: pointer; font-weight: 600; font-size: 13.5px; color: var(--green); min-height: 32px; display: flex; align-items: center; }
+  .two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 10px; margin-top: 6px; }
+  .mini-card { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .mini-card h4 { margin: 0 0 4px; font-size: 14px; color: var(--ink); }
+  .mini-card p { margin: 0 0 8px; color: var(--ink); }
+  /* Practice call */
+  .pc-chat { display: grid; gap: 8px; margin-top: 16px; }
+  .pc-msg { max-width: min(560px, 88%); border-radius: 16px; padding: 10px 14px; }
+  .pc-msg p { margin: 2px 0 0; font-size: 16px; line-height: 1.5; color: var(--ink); }
+  .pc-msg.them { background: var(--card); border: 1px solid var(--line); border-bottom-left-radius: 4px; justify-self: start; }
+  .pc-msg.you { background: color-mix(in srgb, var(--green) 14%, var(--card)); border: 1px solid color-mix(in srgb, var(--green) 40%, var(--line)); border-bottom-right-radius: 4px; justify-self: end; }
+  .pc-who { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .pc-note { justify-self: end; font-size: 12.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; }
+  .pc-note.good { color: var(--green); background: color-mix(in srgb, var(--green) 12%, transparent); }
+  .pc-note.meh { color: var(--ink); background: color-mix(in srgb, var(--l3) 22%, transparent); }
+  .pc-result { text-align: center; background: color-mix(in srgb, var(--accent) 10%, var(--card)); border: 2px solid var(--accent); border-radius: 16px; padding: 16px; margin-top: 6px; }
+  .pc-result .tier { font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink); }
+  .pc-result > b { display: block; font-family: Fraunces, Georgia, serif; font-size: 26px; color: var(--ink); }
+  .pc-result p { margin: 4px 0; }
+  .pc-now { margin-top: 18px; scroll-margin: 120px; }
+  .pc-now .cf-card::before { background: var(--green); }
+  /* Learn */
+  .method-list { display: grid; gap: 12px; }
+  .method { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  .method-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+  .method h3 { font-size: 20px; }
+  .m-sum { margin: 6px 0 0; color: var(--ink); font-size: 15.5px; }
+  .m-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 4px 18px; }
+  .m-grid p, .m-how { margin: 0; color: var(--ink); white-space: pre-line; }
+  .m-how { padding-left: 20px; }
+  .m-say { background: var(--bg); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 10px 12px; margin-top: 12px; }
+  .m-say p { margin: 2px 0 6px; font-size: 16px; color: var(--ink); }
+  .m-src { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+  .quote-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 12px; margin-top: 14px; }
+  .quote { margin: 0; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--green); border-radius: 14px; padding: 16px 18px; }
+  .quote blockquote { margin: 0; font-family: Fraunces, Georgia, serif; font-size: 19px; line-height: 1.4; color: var(--ink); }
+  .quote figcaption { margin-top: 10px; font-weight: 700; color: var(--ink); font-size: 14px; }
+  .quote figcaption span { display: block; font-weight: 500; color: var(--muted); font-size: 12.5px; }
+  @media (max-width: 700px) {
+    .head .tabs button { font-size: 11.5px; }
+    .who-strip .actions { width: 100%; }
+    .score-badge b { font-size: 22px; }
+    .pc-msg { max-width: 92%; }
+  }
+  .more-filters { grid-column: 1 / -1; }
+  .more-filters > summary { cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--green); min-height: var(--tap); display: flex; align-items: center; gap: 8px; list-style: none; text-transform: none; letter-spacing: 0; border: 0; background: none; padding: 0; width: auto; }
+  .more-filters > summary::after { content: "▾"; color: var(--muted); }
+  .more-filters[open] > summary::after { content: "▴"; }
+  .more-filters .filterbar { margin-top: 4px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 <header>
   <div class="head">
-    <h1>Rebuttal <em>Library</em></h1>
+    <h1>Pitch <em>Software</em></h1>
+    <!-- 2026-11-02: four tabs. On phones this row becomes a bottom tab bar. -->
     <div class="tabs" role="tablist" aria-label="Sections" id="tabs">
-      <button role="tab" aria-selected="false" data-view="leads">Leads</button>
-      <button role="tab" aria-selected="false" data-view="niches">Niches</button>
-      <button role="tab" aria-selected="false" data-view="pitch">Services</button>
-      <button role="tab" aria-selected="true" data-view="library">On a call</button>
-      <button role="tab" aria-selected="false" data-view="practice">Practice</button>
-      <button role="tab" aria-selected="false" data-view="tips">Tips</button>
-      <button role="tab" aria-selected="false" data-view="add">Add new</button>
+      <button role="tab" aria-selected="true" data-view="flow"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="5" rx="1.5"/><rect x="3" y="16" width="6" height="5" rx="1.5"/><rect x="15" y="16" width="6" height="5" rx="1.5"/><path d="M12 8v4M6 16v-2h12v2"/></svg><span>Flow chart</span></button>
+      <button role="tab" aria-selected="false" data-view="leads"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.6c1.8.8 3 2.6 3.5 5.4"/></svg><span>Prospects</span></button>
+      <button role="tab" aria-selected="false" data-view="practice"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg><span>Practice</span></button>
+      <button role="tab" aria-selected="false" data-view="learn"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M8 7.5h8M8 11h6"/></svg><span>Learn</span></button>
     </div>
-    <span class="save-state" id="saveState" aria-live="polite"></span>
+    <button class="btn quiet theme-btn" id="themeBtn" aria-label="Switch to dark mode" title="Light / dark">🌙</button>
     <button class="btn quiet copy-sm" id="signOut" hidden>Sign out</button>
   </div>
 </header>
 
 <main class="wrap">
-  <section id="view-library">
+  <!-- 2026-11-02: four tabs: Flow chart, Prospects, Practice, Learn -->
+  <section id="view-flow">
+    <div class="flow-top"><h2 class="page-title">Flow chart</h2></div>
+    <!-- 2026-11-02: one-line niche picker (63 chips pushed the call flow off a phone screen) -->
+    <div class="niche-line" id="flowNiches"></div>
+    <select id="nicheSelect" hidden aria-hidden="true" tabindex="-1"></select>
+    <div id="flowWho"></div>
+    <div id="nicheBody"><div class="loading">Loading the flow chart…</div></div>
+  </section>
+
+  <section id="view-leads" hidden>
+    <h2 class="page-title">Prospects</h2>
+    <div class="search"><input id="leadQ" type="search" placeholder="Search prospects by name…" autocomplete="off" aria-label="Search prospects"></div>
+    <div class="filterbar" id="leadFilters"></div>
+    <p class="help" style="margin-top:10px"><b>Score</b> rates each business's website and Google presence from 0 to 100. Lower = more problems you can fix, so they're listed first. Tap <b>Spoke to them</b> after a call to check them off.</p>
+    <div class="row-tools"><span class="count" id="leadCount"></span><button class="btn quiet" id="clearFilters">Reset filters</button></div>
+    <div class="list" id="leadList"></div>
+    <div id="leadMore"></div>
+  </section>
+
+  <section id="view-lead" hidden>
+    <button class="btn" id="backToLeads" style="margin-top:16px">← Back to prospects</button>
+    <div id="leadDetail"></div>
+  </section>
+
+
+  <section id="view-practice" hidden>
+    <h2 class="page-title">Practice</h2>
+    <!-- 2026-11-02: two practice modes. "Practice call" role-plays the flow chart: the app answers as the prospect -->
+    <div class="seg-tabs" role="tablist" aria-label="Practice mode">
+      <button data-pmode="call" aria-pressed="true">Practice call</button><button data-pmode="drill" aria-pressed="false">Objection drill</button>
+    </div>
+    <div id="pcBody"></div>
+    <div class="practice" id="drillBox" hidden>
+      <div class="label">Pick how rough they get</div>
+      <div class="levels" id="practiceLevels"></div>
+      <div class="say" id="practiceSay">Press "Next objection" to start</div>
+      <div class="meta" id="practiceMeta" style="justify-content:center"></div>
+      <div class="controls">
+        <button class="btn" id="reveal" disabled>Show rebuttals</button>
+        <button class="btn primary" id="next">Next objection</button>
+      </div>
+      <div class="rebs" id="practiceRebs" hidden></div>
+    </div>
+  </section>
+
+
+  <section id="view-learn" hidden>
+    <h2 class="page-title">Learn</h2>
+    <div class="seg-tabs" role="tablist" aria-label="Learn sections">
+      <button data-learn="methods" aria-pressed="true">Sales methods</button><button data-learn="quotes" aria-pressed="false">Book lessons</button><button data-learn="objections" aria-pressed="false">Objections</button><button data-learn="tips" aria-pressed="false">Call tips</button>
+    </div>
+    <div id="learn-methods"><div class="loading">Loading your research…</div></div>
+    <div id="learn-quotes" hidden></div>
+    <div id="learn-objections" hidden>
+      <div class="row-tools" style="margin-top:14px"><p class="help" style="margin:0">Everything prospects say, with your rebuttals. Search it mid-call from the <b>They said…</b> button.</p><button class="btn primary" data-learn="add">+ Add objection</button></div>
     <div class="search">
       <input id="q" type="search" placeholder="Type what they said…" title="Press / to jump here from anywhere" autocomplete="off" aria-label="Search objections">
     </div>
@@ -410,64 +656,14 @@
     </div>
     <div class="list" id="list"></div>
     <div class="stats" id="stats"></div>
-  </section>
-
-  <section id="view-leads" hidden>
-    <div class="search"><input id="leadQ" type="search" placeholder="Search leads by name…" autocomplete="off" aria-label="Search leads"></div>
-    <div class="filterbar" id="leadFilters"></div>
-    <div class="row-tools"><span class="count" id="leadCount"></span><button class="btn quiet" id="clearFilters">Reset filters</button></div>
-    <div class="list" id="leadList"></div>
-    <div id="leadMore"></div>
-  </section>
-
-  <section id="view-lead" hidden>
-    <button class="btn" id="backToLeads" style="margin-top:16px">← Back to leads</button>
-    <div id="leadDetail"></div>
-  </section>
-
-  <section id="view-niches" hidden>
-    <div class="label">Pick a niche</div>
-    <select id="nicheSelect" aria-label="Niche" style="width:100%;font-size:16px;padding:10px 14px;border-radius:12px"></select>
-    <div id="nicheBody"></div>
-  </section>
-
-  <section id="view-pitch" hidden>
-    <div class="label">Call prep: who are you calling?</div>
-    <div class="prep">
-      <input id="bizQ" type="search" placeholder="Business name or type…" autocomplete="off" aria-label="Search businesses">
-      <input id="owner" type="text" placeholder="Owner's first name" autocomplete="off" aria-label="Owner's first name">
     </div>
-    <div class="biz-results" id="bizResults"></div>
-    <div id="bizCard"></div>
-
-    <!-- 2026-11-01: founding-offer checkbox restyled as a clear on/off switch -->
-    <label class="switch-row"><input type="checkbox" id="foundingToggle" role="switch"><span><b>Founding offer is open</b> (free full build-out for the first 10 clients). Off by default. Turn it on only after you confirm.</span></label>
-    <div class="label">Service to pitch</div>
-    <div class="chips" id="services"></div>
-    <div id="pitchBody"></div>
-  </section>
-
-  <section id="view-practice" hidden>
-    <div class="practice">
-      <div class="label">Pick how rough they get</div>
-      <div class="levels" id="practiceLevels"></div>
-      <div class="say" id="practiceSay">Press "Next objection" to start</div>
-      <div class="meta" id="practiceMeta" style="justify-content:center"></div>
-      <div class="controls">
-        <button class="btn" id="reveal" disabled>Show rebuttals</button>
-        <button class="btn primary" id="next">Next objection</button>
-      </div>
-      <div class="rebs" id="practiceRebs" hidden></div>
+    <div id="learn-tips" hidden>
+      <p class="help" style="margin-top:14px">Lessons from the recorded call breakdowns.</p>
+      <div class="chips" id="tipTopics" style="margin-top:8px"></div>
+      <div class="list" id="tipList" style="margin-top:14px"></div>
     </div>
-  </section>
-
-  <section id="view-tips" hidden>
-    <div class="label">Call tips from the recorded call breakdowns</div>
-    <div class="chips" id="tipTopics"></div>
-    <div class="list" id="tipList" style="margin-top:14px"></div>
-  </section>
-
-  <section id="view-add" hidden>
+    <div id="learn-add" hidden>
+      <button class="btn quiet back" data-learn="objections">← Objections</button>
     <form class="form" id="addForm">
       <h2 style="font-size:20px">Add an objection you heard</h2>
       <label>What they said<input name="text" required placeholder="e.g. We only work with people we know"></label>
@@ -482,6 +678,7 @@
       <label>Your rebuttal<textarea name="rebuttal" placeholder="What you said back (or want to say next time)"></textarea></label>
       <div><button class="btn primary" type="submit">Save to library</button></div>
     </form>
+    </div>
   </section>
 </main>
 <div class="toast" id="toast" role="status"></div>
@@ -491,9 +688,15 @@
   <div class="actions"><button class="btn quiet" value="cancel" formnovalidate>Cancel</button><button class="btn primary" value="ok" id="askOk">Save</button></div>
 </form></dialog>
 <div class="cf-backdrop" id="cfBackdrop"></div>
+<!-- 2026-11-01: floating "They said…" button: search objections mid-call from any screen without losing your place -->
+<button class="fab" id="fab" hidden aria-haspopup="dialog" aria-label="They said… (search objections)"><span aria-hidden="true">💬</span><span class="fab-text"> They said…</span></button>
+<dialog class="ask qs" id="qs" aria-label="Quick objection search">
+  <div class="qs-top"><input id="qsInput" type="search" placeholder="Type what they said…" autocomplete="off" aria-label="What they said"><button class="btn" id="qsClose" aria-label="Close">×</button></div>
+  <div id="qsResults"></div>
+</dialog>
 <div class="signin" id="signin" hidden>
   <form id="signinForm">
-    <h2>Rebuttal <em>Library</em></h2>
+    <h2>Pitch <em>Software</em></h2>
     <p style="margin-top:-6px">Sign in with your Live Free Software account.</p>
     <!-- 2026-11-01: labels + bigger fields; error text now shows in red -->
     <label class="count" for="siEmail" style="margin-bottom:-8px">Email</label>
@@ -598,6 +801,10 @@ const DB = {
   calls: () => DB.all("calls", "id,lead,niche,final_tier,date,logged_at", "logged_at"),
   logCall: (c) => DB.check(sb.rpc("log_call", {p_niche: c.niche, p_lead: c.lead, p_final_tier: c.tier, p_notes: c.notes, p_steps: c.steps})),
   deleteCall: (id) => DB.check(sb.from("calls").delete().eq("id", id)),
+  // Prospects Giles has spoken to (migration 0005): one row per lead, only in Supabase
+  async spoke() { return Object.fromEntries((await DB.all("spoke", "lead_id,spoke_on", "lead_id")).map((r) => [r.lead_id, r.spoke_on])); },
+  setSpoke: (id, day) => DB.check(sb.from("spoke").upsert({lead_id: id, spoke_on: day})),
+  unsetSpoke: (id) => DB.check(sb.from("spoke").delete().eq("lead_id", id)),
 };
 const allowed = (r) => settings.founding_offer || !/founding/i.test(r.style + " " + r.text);
 function sortedRebuttals(o) { return o.rebuttals.filter(allowed).sort((a, b) => (b.starred - a.starred) || (rate(b) - rate(a))); }
@@ -612,7 +819,6 @@ async function load() {
   libLoaded = true;
   render();
   // 2026-11-01: if the app reopened on Services, redraw it now that the objections exist (it showed "None tagged yet")
-  if (pitch.services.length) renderPitch();
 }
 let libLoaded = false;
 
@@ -765,6 +971,8 @@ document.addEventListener("click", async (e) => {
 
 document.addEventListener("toggle", (e) => {
   const el = e.target;
+  if (el.matches && el.matches("details.more-filters")) { salesView.moreOpen = el.open; return; }
+  if (el.matches && el.matches("details.fold")) { current.folds = current.folds || new Set(); el.open ? current.folds.add(el.dataset.fold) : current.folds.delete(el.dataset.fold); return; }
   if (!el.matches || !el.matches("details.obj")) return;
   el.open ? state.open.add(el.dataset.id) : state.open.delete(el.dataset.id);
 }, true);
@@ -778,23 +986,29 @@ document.addEventListener("keydown", (e) => {
 });
 
 function showView(v) {
-  // 2026-11-01: a lead page needs a lead picked first, so reopening the app on "lead" now goes to the Leads list (was a blank page)
+  // 2026-11-02: four tabs. Old view names (from saved state and existing buttons) map onto them.
+  const ALIAS = {today: "flow", more: "flow", niches: "flow", pitch: "leads", library: "learn", tips: "learn", add: "learn"};
+  const LEARN_SUB = {library: "objections", tips: "tips", add: "add"};
+  if (LEARN_SUB[v]) learnTab = LEARN_SUB[v];
+  v = ALIAS[v] || v;
+  // a prospect page needs a prospect picked first, so reopening the app on "lead" goes to the Prospects list
   if (v === "lead" && !current.lead) v = "leads";
-  const tabFor = v === "lead" ? "leads" : v;  // keep "Leads" highlighted while viewing one lead (no tab was highlighted)
+  const tabFor = v === "lead" ? "leads" : v;
   document.querySelectorAll(".tabs button").forEach((b) => {
     const on = b.dataset.view === tabFor;
     b.setAttribute("aria-selected", on); b.tabIndex = on ? 0 : -1;
-    if (on) b.scrollIntoView({block: "nearest", inline: "nearest"});
   });
-  cfPanelOpen(false);  // the Goals & transcript panel used to stay open over every other tab
-  if (v === "pitch") loadPitch();
-  if (v === "leads" || v === "niches") {
-    if (!sales) $(v === "leads" ? "#leadList" : "#nicheBody").innerHTML = `<div class="loading">Loading ${v === "leads" ? "leads" : "niches"}…</div>`;
-    loadSales().then(() => v === "niches" ? renderNiche() : renderLeads());
+  cfPanelOpen(false);  // the Goals & transcript panel closes whenever you change tabs
+  if (v === "leads" || v === "flow" || v === "practice") {
+    if (!sales && v === "leads") $("#leadList").innerHTML = `<div class="loading">Loading prospects…</div>`;
+    loadSales().then(() => { if ($("#view-" + v).hidden) return; v === "flow" ? renderNiche() : v === "leads" ? renderLeads() : renderPractice(); });
   }
-  ["leads", "lead", "niches", "pitch", "library", "practice", "tips", "add"].forEach((n) => $("#view-" + n).hidden = n !== v);
+  if (v === "learn") renderLearn();
+  ["flow", "leads", "lead", "practice", "learn"].forEach((n) => $("#view-" + n).hidden = n !== v);
+  // the floating "They said…" button shows on the Flow chart and Prospects tabs
+  $("#fab").hidden = !["flow", "lead"].includes(v) || !$("#signin").hidden;  // not on the list, where it would cover the Spoke buttons
   try { localStorage.setItem("lfs-rebuttals-view", v === "lead" ? "leads" : v); } catch (_) {}
-  updateTabFade();
+  window.scrollTo(0, 0);
 }
 // 2026-11-01: arrow keys move between tabs (standard tab-list keyboard behavior)
 $("#tabs").addEventListener("keydown", (e) => {
@@ -870,11 +1084,26 @@ async function loadSales() {
   sales.byId = Object.fromEntries(sales.leads.map((l) => [l.id, l]));
   sales.towns = [...new Set(sales.leads.map((l) => l.town).filter(Boolean))].sort();
   sales.types = sales.niches.map((n) => n.type).sort();
-  $("#nicheSelect").innerHTML = `<option value="">All niches: overview</option>` + sales.niches.map((n) => `<option value="${esc(n.type)}">${esc(n.type)} (${n.ready} ready)${n.low_sample ? " · low sample" : ""}</option>`).join("");
+  // 2026-11-02: a blank first option, so the Flow chart opens on the priority niche (a filled select always has a value)
+  $("#nicheSelect").innerHTML = `<option value=""></option>` + sales.niches.map((n) => `<option value="${esc(n.type)}">${esc(n.type)} (${n.ready} ready)${n.low_sample ? " · low sample" : ""}</option>`).join("");
   salesView.filters = defaultFilters();
 }
 
-function defaultFilters() { return {types: [], town: "", status: "ready", pitch: "", confidence: "", site: "", grade: "", plan: "", email: "", outcome: ""}; }
+// 2026-11-02: "Spoke to them" check-off. Saved only in Supabase (the spoke table, {leadId: "YYYY-MM-DD"} here),
+// so the phone and the laptop always agree. Follow-ups are handled in the LFS CRM, not here.
+let spoke = {};
+const isSpoke = (id) => spoke[id] || "";
+const fmtDay = (d) => (d ? new Date(d + "T12:00").toLocaleDateString("en-US", {month: "short", day: "numeric"}) : "");
+async function toggleSpoke(id, forceOn = false) {
+  if (spoke[id] && forceOn) return;
+  const was = spoke[id], day = addDays(0);
+  try { was ? await DB.unsetSpoke(id) : await DB.setSpoke(id, day); }
+  catch (_) { toast("Couldn't save. Check your connection."); return; }
+  if (was) delete spoke[id]; else spoke[id] = day;
+  if (!forceOn) toast(was ? "Unmarked" : "Marked as spoke to them");
+}
+const spokeToday = () => Object.values(spoke).filter((d) => d === addDays(0)).length;
+function defaultFilters() { return {types: [], town: "", status: "ready", pitch: "", confidence: "", site: "", grade: "", plan: "", email: "", spoke: ""}; }
 function pitchKind(l) { return l.status !== "ready" ? "" : l.pitch_state || "template"; }
 function lastOutcome(id) { for (let i = sales.outcomes.length - 1; i >= 0; i--) if (sales.outcomes[i].lead === id) return sales.outcomes[i].outcome; return "none"; }
 function gradeBand(g) { return g === 0 ? "0" : g < 60 ? "1-59" : g < 80 ? "60-79" : "80-100"; }
@@ -890,44 +1119,47 @@ function leadMatches(l, f) {
   if (f.grade && gradeBand(l.grade) !== f.grade) return false;
   if (f.plan && l.plan !== f.plan) return false;
   if (f.email && (f.email === "Y") !== Boolean(l.email)) return false;
-  if (f.outcome && lastOutcome(l.id) !== f.outcome) return false;
+  if (f.spoke && (f.spoke === "Y") !== Boolean(isSpoke(l.id))) return false;
   if (salesView.q && !l.name.toLowerCase().includes(salesView.q.toLowerCase())) return false;
   return true;
 }
 
 function renderFilters() {
   const f = salesView.filters;
+  const d = defaultFilters(), extra = ["status", "pitch", "confidence", "site", "grade", "plan", "email"].filter((k) => f[k] !== d[k]).length;
   const sel = (key, label, opts) => `<label>${label}<select data-filter="${key}"><option value="">All</option>${Object.entries(opts).map(([v, t]) => `<option value="${esc(v)}" ${f[key] === v ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></label>`;
   $("#leadFilters").innerHTML = `
-    <label>Niche<details><summary>${f.types.length ? esc(f.types.length === 1 ? f.types[0] : f.types.length + " niches") : "All niches"}</summary><div class="menu">
+    <label>Niche<details class="niche-menu"><summary>${f.types.length ? esc(f.types.length === 1 ? f.types[0] : f.types.length + " niches") : "All niches"}</summary><div class="menu">
       ${sales.types.map((t) => `<label><input type="checkbox" data-type="${esc(t)}" ${f.types.includes(t) ? "checked" : ""}>${esc(t)}</label>`).join("")}</div></details></label>
+    ${sel("spoke", "Spoke to them", {N: "Not yet", Y: "Yes"})}
     ${sel("town", "Town", Object.fromEntries(sales.towns.map((t) => [t, t])))}
+    <!-- 2026-11-02: the rest of the filters fold away so the list starts near the top on a phone -->
+    <details class="more-filters" ${salesView.moreOpen ? "open" : ""}><summary>More filters${extra ? ` <span class="pill heard">${extra} on</span>` : ""}</summary><div class="filterbar">
     ${sel("status", "Pitch status", STATUS)}
     ${sel("pitch", "Pitch", {polished: "Polished", review: "Needs review", template: "Template only"})}
     ${sel("confidence", "Confidence", {High: "High", Medium: "Medium", Low: "Low"})}
     ${sel("site", "Website", SITE)}
-    ${sel("grade", "Health Grade", {"0": "0 (no site)", "1-59": "1 to 59", "60-79": "60 to 79", "80-100": "80 to 100"})}
+    ${sel("grade", "Score", {"0": "0 (no site)", "1-59": "1 to 59", "60-79": "60 to 79", "80-100": "80 to 100"})}
     ${sel("plan", "Suggested plan", PLAN)}
-    ${sel("email", "Usable email", {Y: "Yes", N: "No"})}
-    ${sel("outcome", "Outcome", OUTCOME)}`;
+    ${sel("email", "Usable email", {Y: "Yes", N: "No"})}</div></details>`;
 }
 
 function renderLeads() {
   if (!sales) return;
   renderFilters();
-  const rows = sales.leads.filter((l) => leadMatches(l, salesView.filters)).sort((a, b) => a.grade - b.grade || a.name.localeCompare(b.name));
-  $("#leadCount").textContent = `${rows.length.toLocaleString()} leads · worst Health Grade first`;
+  // 2026-11-02: not-yet-spoken-to first, barbers first, then lowest score (most problems to fix)
+  const rows = sales.leads.filter((l) => leadMatches(l, salesView.filters))
+    .sort((a, b) => (!!isSpoke(a.id) - !!isSpoke(b.id)) || (isPriority(b.type) - isPriority(a.type)) || a.grade - b.grade || a.name.localeCompare(b.name));
+  $("#leadCount").innerHTML = `${rows.length.toLocaleString()} prospects · ${rows.filter((l) => isSpoke(l.id)).length} spoken to · <b>${spokeToday()} today</b>`;
   $("#leadList").innerHTML = rows.slice(0, salesView.shown).map((l) => {
-    const top = (l.problems || {})[l.top_problem];
-    const out = lastOutcome(l.id);
-    // 2026-11-01: spans instead of divs (divs aren't allowed inside a <button>)
-    return `<button class="lead-row" data-lead="${esc(l.id)}">
-      <span class="grade ${gradeClass(l.grade)}">${l.grade}<small>grade</small></span>
+    const top = (l.problems || {})[l.top_problem], spoke = isSpoke(l.id);
+    // the row is a container: the big button opens the prospect, the small one checks them off
+    return `<div class="lead-item ${spoke ? "done" : ""}"><button class="lead-row" data-lead="${esc(l.id)}">
+      <span class="grade ${gradeClass(l.grade)}">${l.grade}<small>score</small></span>
       <span><b>${esc(l.name)}</b>${l.maybe_closed ? `<span class="flag">may be closed</span>` : ""}${l.status === "screened" ? `<span class="flag">screened out</span>` : ""}${l.pitch_state === "review" ? `<span class="flag">needs review</span>` : ""}
-        <span class="meta"><span>${esc(l.type)}</span>${l.town ? `<span>· ${esc(l.town)}</span>` : ""}${top ? `<span>· ${esc(top.text)}</span>` : ""}</span></span>
-      <span class="end meta">${l.plan ? `<span class="pill">${PLAN[l.plan] || esc(l.plan)}</span>` : ""}${out !== "none" ? `<span class="pill heard">${OUTCOME[out]}</span>` : ""}</span>
-    </button>`;
-  }).join("") || `<div class="empty">No leads match these filters.</div>`;
+        <span class="meta"><span>${esc(l.type)}</span>${l.town ? `<span>· ${esc(l.town)}</span>` : ""}${l.owner ? `<span>· ask for ${esc(String(l.owner).trim().split(/\s+/)[0])}</span>` : ""}${top ? `<span>· ${esc(top.text)}</span>` : ""}</span></span></button>
+      <button class="spoke-btn" data-spoke="${esc(l.id)}" aria-pressed="${!!spoke}" aria-label="${spoke ? "Spoke to them, tap to undo" : "Mark as spoke to them"}">${spoke ? `✓<small>${esc(fmtDay(spoke))}</small>` : `<span class="box"></span><small>Spoke</small>`}</button></div>`;
+  }).join("") || `<div class="empty">No prospects match these filters.</div>`;
   $("#leadMore").innerHTML = rows.length > salesView.shown ? `<button class="btn" id="showMore" style="margin-top:10px">Show ${Math.min(100, rows.length - salesView.shown)} more</button>` : "";
 }
 
@@ -1040,7 +1272,7 @@ async function saveLog() {
     sales.outcomes.push(await DB.addOutcome(entry));
     toast(right ? "Saved. The prediction was right!" : "Saved. Odds updated.");
     startLog(n, L.lead ? sales.byId[L.lead] : null, L.pitch);
-    L.lead ? renderLead() : renderNiche();
+    renderNiche();
   } catch (e) { toast("Couldn't save. Check your connection."); }
 }
 
@@ -1073,50 +1305,48 @@ function nicheRow(n) {
     acc: judged.length ? judged.filter((o) => o.path_correct === "Y").length / judged.length : -1, best: best && best.n ? best : null};
 }
 
-function renderOverview() {
-  const sort = current.nicheSort || "ready";
-  const rows = sales.niches.map(nicheRow).sort((a, b) =>
-    sort === "win" ? b.win - a.win || b.logged - a.logged : sort === "logged" ? b.logged - a.logged : b.n.ready - a.n.ready || a.n.type.localeCompare(b.n.type));
-  const pc = (v) => (v < 0 ? "–" : Math.round(v * 100) + "%");
-  const total = sales.outcomes.length + (cfData ? cfData.calls.length : 0);
-  $("#nicheBody").innerHTML = `
-    ${followUpsHtml()}
-    <div class="svc-head"><h2>All niches</h2><p class="count">${sales.niches.length} niches · ${sales.niches.reduce((s, n) => s + n.ready, 0).toLocaleString()} ready leads · ${total} results logged. Tap a niche to open its pitch and flowchart.</p></div>
-    <div class="seg">${[["ready", "Most leads"], ["win", "Best win rate"], ["logged", "Most results"]].map(([k, t]) => `<button class="chip" data-niche-sort="${k}" aria-pressed="${sort === k}">${t}</button>`).join("")}</div>
-    <div class="overview"><table>
-      <thead><tr><th>Niche</th><th>Ready</th><th>Top problem</th><th>Plan</th><th>Logged</th><th>Win rate</th><th>Accuracy</th><th>Best opener</th></tr></thead>
-      <tbody>${rows.map((r) => `<tr>
-        <td><button class="link" data-open-niche="${esc(r.n.type)}">${esc(r.n.type)}</button>${r.n.low_sample ? ` <span class="flag">low sample</span>` : ""}</td>
-        <td class="num">${r.n.ready}</td>
-        <td>${r.n.summary && r.n.summary[0] ? `${esc(r.n.summary[0].label)} <small>(${r.n.summary[0].pct}%)</small>` : "–"}</td>
-        <td class="num">${r.n.plan ? esc(r.n.plan.price.replace(" a month", "/mo")) : "–"}</td>
-        <td class="num">${r.logged}</td><td class="num">${pc(r.win)}</td><td class="num">${pc(r.acc)}</td>
-        <td>${r.best ? `${esc(r.best.op.style)} <small>(${pc(r.best.rate)}, n=${r.best.n})</small>` : "–"}</td></tr>`).join("")}</tbody></table></div>
-    <p class="count" style="margin-top:8px">Win rate counts calls booked and free-trial sign-ups, plus call flow calls that ended on outcome 1 to 6, out of every logged result. Accuracy and best opener are for the old flowchart.</p>`;
-}
 
+// 2026-11-02: the Flow chart tab. Pick a niche, optionally load a prospect, walk the call.
+// The niche's general pitch, top problems and plan sit in folds under the flow.
+// The niche listed first and opened by default: settings key priority_niche (Barber Shop, Nov 2026). Change it from the Flow chart tab.
+const isPriority = (type) => type === (settings.priority_niche || "Barber Shop");
+let flowLead = null;  // the prospect loaded into the flow chart, or null for a general call
 function renderNiche() {
-  if (!sales || !sales.niches.length) return;
-  const type = $("#nicheSelect").value;
-  if (!type) { renderOverview(); return; }
-  const n = sales.niches.find((x) => x.type === type);
-  $("#leadDetail").innerHTML = "";  // only one page may hold the call flow (#cf) at a time
-  if (!current.log || current.log.niche !== type || current.log.lead) startLog(n, null, "general");
+  if (!sales || !sales.niches.length) { if (sales) $("#nicheBody").innerHTML = `<div class="empty">No niches loaded yet.</div>`; return; }
+  const ordered = sales.niches.slice().sort((a, b) => (isPriority(b.type) - isPriority(a.type)) || (!!cfFlow(b.type) - !!cfFlow(a.type)) || b.ready - a.ready);
+  let type = $("#nicheSelect").value;
+  if (!type || !sales.niches.some((x) => x.type === type)) { type = ordered[0].type; $("#nicheSelect").value = type; }
+  if (flowLead && flowLead.type !== type) flowLead = null;
+  const n = sales.niches.find((x) => x.type === type), L = flowLead;
+  if (!current.log || current.log.niche !== type || (current.log.lead || "") !== (L ? L.id : "")) startLog(n, L, L ? "personalized" : "general");
   current.niche = n;
+  $("#flowNiches").innerHTML = `<span class="label" style="margin:0">Niche</span>
+    <details class="niche-pick"><summary>${esc(type)}${cfFlow(type) ? "" : ` <small>(basic)</small>`}</summary><div class="menu">
+      ${ordered.map((x) => `<button data-flow-niche="${esc(x.type)}" aria-pressed="${x.type === type}">${isPriority(x.type) ? "★ " : ""}${esc(x.type)}${cfFlow(x.type) ? ` <small>full call flow</small>` : ` <small>basic</small>`}</button>`).join("")}</div></details>
+    ${isPriority(type) ? `<span class="help" style="margin:0">★ Your first niche</span>` : `<button class="btn quiet copy-sm" style="margin:0" data-set-priority="${esc(type)}">★ Make this my first niche</button>`}`;
+  const first = (o) => String(o || "").trim().split(/\s+/)[0];
+  $("#flowWho").innerHTML = L ? `<div class="who-strip"><div><span class="label" style="margin:0">Calling</span><b>${esc(L.name)}</b>
+      <span class="help" style="margin:0">${L.owner ? `Ask for <b>${esc(first(L.owner))}</b> · ` : ""}Score ${L.grade}${isSpoke(L.id) ? " · ✓ spoke to them" : ""}</span></div>
+      <div class="actions" style="margin:0">${L.phone ? `<a class="btn call" href="${telHref(L.phone)}">📞 Call</a>` : ""}<button class="btn" data-lead="${esc(L.id)}">Prospect details</button><button class="btn quiet" data-flow-clear>Clear</button></div></div>`
+    : `<div class="who-strip general"><div><span class="label" style="margin:0">General call</span><span class="help" style="margin:0">No prospect loaded, so names show as blanks. Load one to fill in their name, owner and reviews.</span></div>
+      <div class="actions" style="margin:0"><button class="btn primary" data-niche-leads="${esc(n.type)}">Pick a ${esc(n.type.toLowerCase())} prospect</button></div></div>`;
+  const fold = (k, title, body) => `<details class="fold" data-fold="${k}" ${current.folds && current.folds.has(k) ? "open" : ""}><summary>${title}</summary><div class="fold-body">${body}</div></details>`;
   const fmts = {email: `Subject: ${n.email.subject}\n\n${n.email.body}\n\n${n.email.signature}`, text: n.text, spoken: n.spoken};
-  $("#nicheBody").innerHTML = `
-    <div class="actions" style="margin-top:12px"><button class="btn quiet" data-open-niche="">← All niches</button>
-      <button class="btn" data-niche-leads="${esc(n.type)}">See the ${n.ready} ${esc(n.plural)} to pitch</button></div>
-    <div class="svc-head"><h2>${esc(n.type)}</h2><p class="count">${esc(n.note)}</p>
-      ${n.low_sample ? `<p><span class="flag">Low sample</span> ${n.grouped_with ? `Problems borrowed from ${esc(n.grouped_with)}.` : ""}</p>` : ""}</div>
+  const flow = cfFlow(n.type) ? `<div class="cf" id="cf"></div>`
+    : `<p class="help" style="margin-top:14px">${esc(n.type)} doesn't have a full call flow yet, so this is the basic flowchart.</p>` + treeHtml(n, current.treeOpener && n.openers.some((o) => o.id === current.treeOpener) ? current.treeOpener : null) + logBoxHtml(n, L);
+  $("#nicheBody").innerHTML = `${flow}
     ${cfFlow(n.type) ? cfStatsHtml(n.type) : nicheStatsHtml(n)}
-    <div class="script"><h3>Top problems (internal, not sent)</h3><ol>${n.summary.map((s) => `<li>${esc(s.label)}: <b>${s.pct}%</b>${s.of_sites ? " of their websites" : " of ready leads"}</li>`).join("")}</ol></div>
-    ${cfFlow(n.type) ? "" : `<div class="script"><h3>Openers</h3>${n.openers.map((o) => `<div class="sub">${esc(o.style)}</div><p>${esc(o.text)}</p><button class="btn quiet copy-sm" data-copytext="${esc(o.text)}">Copy</button>`).join("")}</div>`}
-    <div class="script"><h3>Pitch</h3><div class="fmt-tabs">${[["email", "Email"], ["text", "Text"], ["spoken", "In person / phone"]].map(([k, t]) => `<button class="chip" data-fmt="${k}" aria-pressed="${current.fmt === k}">${t}</button>`).join("")}</div>
-      ${copyable(current.fmt === "email" ? `Email (${n.email.words} words)` : current.fmt === "text" ? `Text (${n.text.length} characters)` : "Spoken, about 30 seconds", fmts[current.fmt] || fmts.email)}</div>
-    <div class="script"><h3>Recommended plan: ${esc(n.plan.name)} (${esc(n.plan.price)})</h3><p>${esc(n.plan.reason)} Month to month, cancel anytime, with a 5-day free trial and no card needed.</p></div>
-    ${cfFlow(n.type) ? `<div class="cf" id="cf"></div>` : treeHtml(n, current.treeOpener && n.openers.some((o) => o.id === current.treeOpener) ? current.treeOpener : null) + logBoxHtml(n, null)}`;
-  if (cfFlow(n.type)) cfOpen(n.type, null);
+    ${fold("nprob", `${esc(n.type)}: top problems <span>Internal, not sent</span>`, `<ol style="margin:0;padding-left:20px">${(n.summary || []).map((x) => `<li>${esc(x.label)}: <b>${x.pct}%</b>${x.of_sites ? " of their websites" : " of ready leads"}</li>`).join("")}</ol>
+      ${n.low_sample ? `<p class="help"><span class="flag">Low sample</span> ${n.grouped_with ? `Problems borrowed from ${esc(n.grouped_with)}.` : ""}</p>` : ""}${n.note ? `<p class="help">${esc(n.note)}</p>` : ""}`)}
+    ${fold("npitch", `General ${esc(n.type.toLowerCase())} pitch <span>Email · Text · In person</span>`, `<div class="fmt-tabs">${[["email", "Email"], ["text", "Text"], ["spoken", "In person / phone"]].map(([k, t]) => `<button class="chip" data-fmt="${k}" aria-pressed="${current.fmt === k}">${t}</button>`).join("")}</div>
+      ${copyable(current.fmt === "email" ? `Email (${n.email.words} words)` : current.fmt === "text" ? `Text (${n.text.length} characters)` : "Spoken, about 30 seconds", fmts[current.fmt] || fmts.email)}`)}
+    ${n.plan ? fold("nplan", `Recommended plan: ${esc(n.plan.name)} <span>${esc(n.plan.price)}</span>`, `<p style="margin:0;color:var(--ink)">${esc(n.plan.reason)} Month to month, cancel anytime, with a 5-day free trial and no card needed.</p>`) : ""}`;
+  if (cfFlow(n.type)) cfOpen(n.type, L);
+}
+// Load a prospect into the flow chart
+function openFlowFor(l) {
+  flowLead = l; $("#nicheSelect").value = l.type; current.treeOpener = null;
+  showView("flow");
 }
 
 function renderLead() {
@@ -1128,14 +1358,12 @@ function renderLead() {
       ${l.phone ? `<div class="contact"><a class="btn call" href="${telHref(l.phone)}">📞 Call ${esc(l.phone)}</a></div>` : ""}</div>`;
     return;
   }
-  $("#nicheBody").innerHTML = "";  // only one page may hold the call flow (#cf); the Niches tab redraws when opened
   const lp = current.pitch || {}, pol = lp.polished, tpl = lp.template;
-  if (!current.log || current.log.lead !== l.id) startLog(n, l, l.status === "ready" ? "personalized" : "general");
-  let pitchHtml;
+  let pitchHtml, reviewHtml = "";
   if (l.status !== "ready") {
     pitchHtml = `<div class="script"><h3>${l.status === "screened" ? "Screened out: no pitch" : "Not researched yet: use the niche pitch"}</h3>
       <p class="count">${l.status === "screened" ? esc(l.skip_reason || "Chain, institution or closed.") : "A personalized pitch appears here once the research fills in this row."}</p>
-      ${l.status === "not_researched" ? `<button class="btn" data-open-niche="${esc(l.type)}">Open the ${esc(l.type)} pitch</button>` : ""}</div>`;
+      ${l.status === "not_researched" ? `<button class="btn" data-open-niche="${esc(l.type)}">Open the ${esc(l.type)} flow chart and pitch</button>` : ""}</div>`;
   } else if (!pol && !tpl) {
     pitchHtml = `<div class="script"><h3>Pitch not loaded</h3><p class="count">Check your connection, then open the lead again.</p></div>`;
   } else {
@@ -1145,31 +1373,39 @@ function renderLead() {
     const fmts = {email: `Subject: ${p.subject}\n\n${p.body}\n\n${sig}`, text: p.text, spoken: p.spoken};
     const sources = pol && pol.sources && pol.sources.length ? pol.sources.map((s) => ({fact: s.claim, col: s.col})) : tpl.sources;
     const rv = lp.review;
-    pitchHtml = (rv ? `<div class="script"><h3><span class="flag">Needs review</span> Check this lead before pitching</h3>
-      <p>${esc(rv.reason)}</p><p class="count">Flagged by ${esc(rv.model)}. The pitch below was built from this row's research, so it may name the wrong services or owner.</p></div>` : "") +
-      `<div class="script"><h3>Personalized pitch ${pol ? `<span class="pill heard">Polished</span>` : `<span class="pill">Template</span>`}</h3>
+    reviewHtml = rv ? `<div class="script"><h3><span class="flag">Needs review</span> Check this lead before pitching</h3>
+      <p>${esc(rv.reason)}</p><p class="count">Flagged by ${esc(rv.model)}. The pitch below was built from this row's research, so it may name the wrong services or owner.</p></div>` : "";
+    pitchHtml = `<div class="script" style="margin-top:0;border:0;padding:0"><h3>Personalized pitch ${pol ? `<span class="pill heard">Polished</span>` : `<span class="pill">Template</span>`}</h3>
       <div class="fmt-tabs">${[["email", "Email"], ["text", "Text"], ["spoken", "In person / phone"]].map(([k, t]) => `<button class="chip" data-fmt="${k}" aria-pressed="${current.fmt === k}">${t}</button>`).join("")}</div>
       ${copyable(current.fmt === "email" ? "Email" : current.fmt === "text" ? `Text (${p.text.length} characters)` : "Spoken, about 30 seconds", fmts[current.fmt] || fmts.email)}
       <div class="sub">Where each fact came from</div><div class="src">${sources.map((s) => `${esc(s.fact)} <code>${esc(s.col)}</code>`).join("<br>")}</div></div>`;
   }
   const facts = [["Pain points", l.pain, "AM"], ["Best pitch angle", l.angle, "AN"], ["Years in business", l.years, "AD"], ["Recent news", l.news, "AG"],
     ["Services", l.services, "AF"], ["Review themes", l.review_themes, "AL"], ["Team size", l.team_size, "AC"], ["Tools they use", l.tools, "AK"]].filter((x) => x[1]);
+  // 2026-11-02 prospect page: who to ask for + Call, Spoke-to-them check, a big "Open flow chart" button,
+  // then the call script for the best-fit service (open), the pitch to send and research notes (folded)
+  const fold = (k, title, body) => `<details class="fold" data-fold="${k}" ${current.folds && current.folds.has(k) ? "open" : ""}><summary>${title}</summary><div class="fold-body">${body}</div></details>`;
+  const ready = l.status === "ready", spoke = isSpoke(l.id);
   $("#leadDetail").innerHTML = `
-    <div class="biz"><h3>${esc(l.name)}</h3>
-      <small>${esc(l.type)}${l.town ? ` · ${esc(l.town)}` : ""} · ${l.reviews ? `${l.rating}★ from ${l.reviews} reviews` : "no reviews"} · Health Grade ${l.grade} · ${esc(SITE[l.site])} · ${esc(l.confidence || "not researched")} confidence</small>
+    <div class="biz"><div class="biz-top"><div><h3>${esc(l.name)}</h3>
+      <small>${esc(l.type)}${l.town ? ` · ${esc(l.town)}` : ""} · ${l.reviews ? `${l.rating}★ from ${l.reviews} reviews` : "no reviews"} · ${esc(SITE[l.site] || "")}</small></div>
+      <div class="score-badge ${gradeClass(l.grade)}" title="Score: website and Google health, 0 to 100. Lower = more problems you can fix."><b>${l.grade}</b><span>score</span></div></div>
       ${l.maybe_closed ? `<p><span class="flag">May be closed</span> Keep it short and low-pressure.</p>` : ""}
-      ${l.owner ? `<div class="meta" style="margin-top:6px"><span>Owner: <b style="color:var(--ink)">${esc(l.owner)}</b></span></div>` : ""}
-      <!-- 2026-11-01: contact links are now real buttons (the phone number was 12px link text) -->
+      ${l.owner ? `<p class="ask-for">Ask for <b>${esc(String(l.owner).trim().split(/\s+/)[0])}</b>${String(l.owner).trim().includes(" ") ? ` <span>(${esc(l.owner)})</span>` : ""}</p>` : `<p class="ask-for muted">Owner's name not found. Ask who runs the shop.</p>`}
       <div class="contact">${l.phone ? `<a class="btn call" href="${telHref(l.phone)}">📞 Call ${esc(l.phone)}</a>` : ""}
-        ${l.email ? `<a class="btn" href="mailto:${esc(l.email)}">✉ ${esc(l.email)}</a>` : `<span class="btn quiet" style="cursor:default">No usable email</span>`}
+        <button class="btn spoke-btn" data-spoke="${esc(l.id)}" aria-pressed="${spoke}">${spoke ? `✓ Spoke to them <small>${esc(fmtDay(spoke))}</small>` : "Mark as spoke to them"}</button>
+        ${l.email ? `<a class="btn" href="mailto:${esc(l.email)}">✉ Email</a>` : ""}
         ${safeUrl(l.website) ? `<a class="btn" href="${esc(safeUrl(l.website))}" target="_blank" rel="noopener">Website ↗</a>` : ""}
         ${safeUrl(l.maps) ? `<a class="btn" href="${esc(safeUrl(l.maps))}" target="_blank" rel="noopener">Google Maps ↗</a>` : ""}</div>
-      <div>${Object.values(l.problems || {}).map((p) => `<span class="pain">${esc(p.text)} <small>(${esc(p.col)})</small></span>`).join("")}</div>
-      ${l.plan_text ? `<p style="margin:8px 0 0;font-size:13.5px">Suggested plan: <b>${esc(l.plan_text)}</b> <small>(AO)</small></p>` : ""}</div>
-    ${pitchHtml}
-    ${facts.length ? `<div class="script"><h3>Research notes (internal)</h3>${facts.map(([k, v, c]) => `<div class="sub">${k} <code>${c}</code></div><p>${esc(v)}</p>`).join("")}</div>` : ""}
-    ${l.status === "screened" ? "" : cfFlow(n.type) ? `<div class="cf" id="cf"></div>` : treeHtml(n, current.treeOpener) + logBoxHtml(n, l)}`;
-  if (l.status !== "screened" && cfFlow(n.type)) cfOpen(n.type, l);
+      <div class="sub" style="margin-top:12px">What to bring up</div>
+      <div>${Object.values(l.problems || {}).map((p) => `<span class="pain">${esc(p.text)} <small>(${esc(p.col)})</small></span>`).join("") || `<span class="count">No website problems found. Lead with questions.</span>`}</div>
+      ${l.plan_text ? `<p class="help" style="margin-top:8px">Suggested plan: <b>${esc(l.plan_text)}</b> <small>(AO)</small> · ${esc(l.confidence || "not researched")} research confidence</p>` : ""}
+      ${l.status === "screened" ? "" : `<button class="btn primary big-cta" data-flow-lead="${esc(l.id)}">Open flow chart for this call →</button>`}</div>
+    ${reviewHtml}
+    ${ready ? "" : pitchHtml}
+    ${l.status === "screened" ? "" : `<div class="script call-script"><h3>Call script</h3>${serviceHtml(l)}</div>`}
+    ${ready ? fold("pitch", "Pitch to send <span>Email · Text · In person</span>", pitchHtml) : ""}
+    ${facts.length ? fold("notes", "Research notes <span>Internal, not sent</span>", facts.map(([k, v, c]) => `<div class="sub">${k} <code>${c}</code></div><p>${esc(v)}</p>`).join("")) : ""}`;
 }
 
 $("#leadQ").addEventListener("input", (e) => { salesView.q = e.target.value.trim(); salesView.shown = 100; renderLeads(); });
@@ -1183,28 +1419,36 @@ document.addEventListener("change", (e) => {
     const f = salesView.filters.types;
     t.checked ? f.push(t.dataset.type) : f.splice(f.indexOf(t.dataset.type), 1);
     salesView.shown = 100; renderLeads();
-    document.querySelector("#leadFilters details").open = true;
+    document.querySelector("#leadFilters .niche-menu").open = true;
   }
 });
 // 2026-11-01: the Niche filter menu closes when you tap anywhere else (it stayed open)
 document.addEventListener("click", (e) => {
-  const d = document.querySelector("#leadFilters details[open]");
-  if (d && !d.contains(e.target)) d.open = false;
+  document.querySelectorAll("#leadFilters .niche-menu[open], .niche-pick[open]").forEach((d) => { if (!d.contains(e.target)) d.open = false; });
 });
 document.addEventListener("click", async (e) => {
   const t = e.target.closest("button");
   if (!t) return;
   const rerender = () => (current.lead && !$("#view-lead").hidden ? renderLead() : renderNiche());
   if (t.dataset.lead) {
-    current.lead = sales.byId[t.dataset.lead]; current.fmt = "email"; current.treeOpener = null; current.pitch = null;
+    current.lead = sales.byId[t.dataset.lead]; current.folds = new Set(); current.fmt = "email"; current.treeOpener = null; current.pitch = null;
     if (current.lead.status === "ready") { try { current.pitch = await DB.leadPitch(current.lead.id); } catch (_) { toast("Couldn't load this pitch"); } }
+    await ensurePitch();
     showView("lead"); renderLead(); window.scrollTo(0, 0);
   }
   else if (t.id === "showMore") { salesView.shown += 100; renderLeads(); }
   else if (t.dataset.fmt) { current.fmt = t.dataset.fmt; rerender(); }
   else if (t.dataset.tree) { current.treeOpener = t.dataset.tree; rerender(); }
   else if (t.dataset.log) { keepLogText(); current.log[t.dataset.log] = t.dataset.val; rerender(); }
-  else if (t.dataset.nicheSort) { current.nicheSort = t.dataset.nicheSort; renderNiche(); }
+  else if (t.dataset.flowNiche) { $("#nicheSelect").value = t.dataset.flowNiche; flowLead = null; current.treeOpener = null; renderNiche(); }
+  else if (t.dataset.setPriority) {  // 2026-11-02: the first niche is a setting now, not code
+    try { await DB.saveSetting("priority_niche", t.dataset.setPriority); settings.priority_niche = t.dataset.setPriority; toast(`${t.dataset.setPriority} is now your first niche`); }
+    catch (_) { toast("Couldn't save. Check your connection."); }
+    renderNiche();
+  }
+  else if (t.hasAttribute("data-flow-clear")) { flowLead = null; renderNiche(); }
+  else if (t.dataset.flowLead) { const l = sales.byId[t.dataset.flowLead]; if (l) openFlowFor(l); }
+  else if (t.dataset.spoke) { await toggleSpoke(t.dataset.spoke); !$("#view-lead").hidden ? renderLead() : !$("#view-flow").hidden ? renderNiche() : renderLeads(); }
   else if (t.dataset.nicheLeads) {
     salesView.filters = {...defaultFilters(), types: [t.dataset.nicheLeads]}; salesView.q = ""; $("#leadQ").value = ""; salesView.shown = 100;
     showView("leads"); window.scrollTo(0, 0);
@@ -1219,11 +1463,12 @@ document.addEventListener("click", async (e) => {
     try { await DB.deleteOutcome(last.id); sales.outcomes.pop(); toast("Removed the last saved result"); rerender(); }
     catch (_) { toast("Couldn't undo. Check your connection."); }
   }
-  else if (t.dataset.openNiche !== undefined) { $("#nicheSelect").value = t.dataset.openNiche; current.treeOpener = null; showView("niches"); window.scrollTo(0, 0); }
+  else if (t.dataset.openNiche !== undefined) { $("#nicheSelect").value = t.dataset.openNiche; flowLead = null; current.treeOpener = null; showView("flow"); }
   else if (t.dataset.copytext !== undefined) { try { await navigator.clipboard.writeText(t.dataset.copytext); toast("Copied"); } catch (_) { toast("Couldn't copy"); } }
 });
 
-// ---------- Pitch tab: call prep, scripts per service, objections per service ----------
+// ---------- 2026-11-02: Call script by service (was the Services tab). Lives on each prospect's page now,
+// picks the service that fixes the most of their problems, and fills in their name, owner and reviews. ----------
 const ISSUE = {
   no_site: "there's no website showing up on Google", site_down: "the website wouldn't load when I tried it",
   slow: "the website is slow to load on a phone", not_mobile: "the website is hard to use on a phone",
@@ -1233,49 +1478,34 @@ const ISSUE = {
   no_reviews: "there aren't any Google reviews yet", few_reviews: "there are only a handful of Google reviews",
   low_rating: "the Google rating could use a boost", no_email: "there's no email listed anywhere",
 };
-let pitch = {services: [], flow: []}, biz = null, pitchState = {svc: "custom", biz: null, owner: ""};
-
-async function loadPitch() {
-  $("#foundingToggle").checked = settings.founding_offer;
-  if (pitch.services.length) return;
-  try {
-    pitch = await DB.content("service_pitches");
-    await loadSales();
-    biz = leadsAsBusinesses();
-  } catch (e) { $("#pitchBody").innerHTML = `<div class="empty">Couldn't load the scripts. Check your connection.</div>`; return; }
-  renderPitch();
+let pitch = {services: [], flow: []}, pitchState = {svc: "", forLead: "", biz: null, owner: ""};
+async function ensurePitch() {
+  if (pitch.services.length) return true;
+  try { pitch = (await DB.content("service_pitches")) || pitch; return !!pitch.services.length; } catch (_) { return false; }
 }
-
-// The Services tab speaks in its own problem names; translate each lead into them
-function leadsAsBusinesses() {
-  const MAP = {site_down: ["site_down"], no_site: ["no_site"], no_booking: ["no_booking"], booking_hidden: ["buried_booking"], slow_mobile: ["slow"],
-    stale: ["outdated"], not_secure: ["not_secure"], not_mobile: ["not_mobile"], low_rating: ["low_rating"]};
-  const LABELS = {no_site: "No website", site_down: "Website is down", slow: "Slow on phones", not_mobile: "Not mobile-friendly", not_secure: "Website shows \"Not secure\"",
-    outdated: "Website not updated since 2023 or earlier", no_booking: "No online booking", buried_booking: "Booking hidden on another page", no_tap_call: "No tap-to-call button",
-    no_form: "No contact form or email", no_reviews: "No Google reviews", few_reviews: "Fewer than 10 Google reviews", low_rating: "Google rating under 4 stars", no_email: "No usable email"};
-  const businesses = sales.leads.filter((l) => l.status !== "screened").map((l) => {
-    const pains = [];
-    for (const k of Object.keys(l.problems)) {
-      if (MAP[k]) pains.push(...MAP[k]);
-      if (k === "missing_contact") { if (/tap to call/.test(l.problems[k].text)) pains.push("no_tap_call"); if (/contact form/.test(l.problems[k].text)) pains.push("no_form"); }
-      if (k === "few_reviews") pains.push(l.reviews ? "few_reviews" : "no_reviews");
-    }
-    if (!l.email) pains.push("no_email");
-    return {name: l.name, type: l.type, phone: l.phone, website: l.website, maps: l.maps, rating: l.rating, reviews: l.reviews, pains};
-  });
-  const types = sales.niches.map((n) => ({type: n.type, median_reviews: n.median_reviews !== undefined ? n.median_reviews : 0}));
-  return {source: "the Client Data sheet", businesses, types, pains: Object.fromEntries(Object.entries(LABELS).map(([k, v]) => [k, {label: v}]))};
+// Lead problem names → the script's problem names
+const PAIN_MAP = {site_down: ["site_down"], no_site: ["no_site"], no_booking: ["no_booking"], booking_hidden: ["buried_booking"], slow_mobile: ["slow"],
+  stale: ["outdated"], not_secure: ["not_secure"], not_mobile: ["not_mobile"], low_rating: ["low_rating"]};
+const PAIN_LABELS = {no_site: "no website", site_down: "website down", slow: "slow on phones", not_mobile: "not mobile-friendly", not_secure: "\"Not secure\" warning",
+  outdated: "outdated website", no_booking: "no online booking", buried_booking: "booking hidden", no_tap_call: "no tap-to-call button",
+  no_form: "no contact form", no_reviews: "no Google reviews", few_reviews: "few Google reviews", low_rating: "low Google rating", no_email: "no usable email"};
+function toBiz(l) {
+  const pains = [], probs = l.problems || {};
+  for (const k of Object.keys(probs)) {
+    if (PAIN_MAP[k]) pains.push(...PAIN_MAP[k]);
+    if (k === "missing_contact") { if (/tap to call/i.test(probs[k].text)) pains.push("no_tap_call"); if (/contact form/i.test(probs[k].text)) pains.push("no_form"); }
+    if (k === "few_reviews") pains.push(l.reviews ? "few_reviews" : "no_reviews");
+  }
+  if (!l.email) pains.push("no_email");
+  return {name: l.name, type: l.type, rating: l.rating, reviews: l.reviews || 0, pains};
 }
-
-function typeInfo(b) { return b && biz.types.find((t) => t.type === b.type); }
-
-// Rank services by how many of this business's pain points they fix
+function typeInfo(b) { const n = b && sales && sales.niches.find((x) => x.type === b.type); return n ? {median_reviews: n.median_reviews !== undefined ? n.median_reviews : 0} : null; }
+// Rank services by how many of this business's problems they fix
 function recommend(b) {
   if (!b) return [];
   return pitch.services.map((s) => ({id: s.id, hits: s.pains.filter((p) => b.pains.includes(p)).length}))
     .filter((x) => x.hits).sort((a, c) => c.hits - a.hits).map((x) => x.id);
 }
-
 function fill(text, svc) {
   const b = pitchState.biz, t = typeInfo(b);
   const issueKey = b && (svc.pains.find((p) => b.pains.includes(p)) || b.pains.find((p) => ISSUE[p]));
@@ -1289,85 +1519,56 @@ function fill(text, svc) {
   };
   return esc(text).replace(/\[([^\]]+)\]/g, (m, k) => vals[k] ? `<span class="fill">${esc(vals[k])}</span>` : `<span class="blank">${m}</span>`);
 }
-
-function renderBiz() {
-  const b = pitchState.biz;
-  if (!b) { $("#bizCard").innerHTML = biz ? `<p class="count" style="margin-top:6px">${biz.businesses.length.toLocaleString()} businesses loaded from ${esc(biz.source)}.</p>` : ""; return; }
-  const t = typeInfo(b), recs = recommend(b);
-  const names = Object.fromEntries(pitch.services.map((s) => [s.id, s.name]));
-  $("#bizCard").innerHTML = `<div class="biz">
-    <div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><h3>${esc(b.name)}</h3><button class="btn quiet" data-clear-biz>Clear</button></div>
-    <small>${esc(b.type)} · ${b.reviews ? `${b.rating}★ from ${b.reviews} reviews` : "no reviews"}${t ? ` (typical ${esc(b.type.toLowerCase())} nearby: ${t.median_reviews})` : ""}</small>
-    <div class="contact">${b.phone ? `<a class="btn call" href="${telHref(b.phone)}">📞 Call ${esc(b.phone)}</a>` : ""}
-      ${safeUrl(b.website) ? `<a class="btn" href="${esc(safeUrl(b.website))}" target="_blank" rel="noopener">Website ↗</a>` : ""}
-      ${safeUrl(b.maps) ? `<a class="btn" href="${esc(safeUrl(b.maps))}" target="_blank" rel="noopener">Google Maps ↗</a>` : ""}</div>
-    <div>${b.pains.length ? b.pains.map((p) => `<span class="pain">${esc(biz.pains[p] ? biz.pains[p].label : p)}</span>`).join("") : `<span class="count">No obvious problems found. Lead with questions.</span>`}</div>
-    ${recs.length ? `<p style="margin:8px 0 0;font-size:13.5px">Best fit: ${recs.map((id) => `<b>${esc(names[id])}</b>`).join(", ")}</p>` : ""}
-  </div>`;
+// The call script for one prospect, as 5 numbered steps
+function serviceHtml(l) {
+  if (!pitch.services.length) return `<p class="help">Call scripts didn't load. Check your connection and open the prospect again.</p>`;
+  const b = toBiz(l), recs = recommend(b);
+  pitchState.biz = b; pitchState.owner = l.owner ? String(l.owner).trim().split(/\s+/)[0] : "";
+  if (pitchState.forLead !== l.id || !pitch.services.some((x) => x.id === pitchState.svc)) { pitchState.svc = recs[0] || pitch.services[0].id; pitchState.forLead = l.id; }
+  const s = pitch.services.find((x) => x.id === pitchState.svc);
+  const fixes = s.pains.filter((p) => b.pains.includes(p)).map((p) => PAIN_LABELS[p] || p);
+  const line = (label, text) => `<div class="line">${label ? `<span class="style">${esc(label)}</span>` : ""}<p>${fill(text, s)}</p><button class="btn copy-sm" data-copy="${esc(text)}">Copy</button></div>`;
+  const step = (n, title, hint, body) => `<li class="step"><span class="step-n">${n}</span><div class="step-body"><h4>${title}</h4>${hint ? `<p class="help">${hint}</p>` : ""}${body}</div></li>`;
+  const objs = lib.objections.filter((o) => (o.services || []).includes(s.id)).sort((a, c) => likely(c) - likely(a)).slice(0, 3);
+  return `
+    <div class="svc-pick" role="group" aria-label="Service to pitch">${pitch.services.map((x) => `<button class="chip" data-svc="${esc(x.id)}" aria-pressed="${x.id === s.id}">${recs[0] === x.id ? "★ " : ""}${esc(x.name)}</button>`).join("")}</div>
+    <div class="svc-card"><div class="svc-name"><b>${esc(s.name)}</b><span class="pill">${esc(s.plan)}</span>${recs[0] === s.id ? `<span class="pill heard">Best fit</span>` : ""}</div>
+      <p>${esc(s.one_liner)}</p>
+      <p class="help">${fixes.length ? `Why it fits: fixes their <b>${fixes.map(esc).join("</b>, <b>")}</b>.` : esc(s.best_for)}</p></div>
+    <ol class="steps">
+      ${step(1, "Open", "Pick one. Say your name and town in the first five seconds.", s.openers.filter((o) => !o.founding || settings.founding_offer).map((o) => line(o.style, o.text)).join(""))}
+      ${step(2, "Pitch", "About 30 seconds, then stop and let them talk.", line("", s.pitch) +
+        `<details class="more-lines"><summary>More ways to say it</summary>${line("Let them pick", s.menu)}${line("One-line value", s.value)}${line("Customer story", s.story)}</details>`)}
+      ${step(3, "Ask", "Get them talking about their business.", `<ul class="asks">${s.questions.map((q) => `<li>${fill(q, s)}</li>`).join("")}</ul>`)}
+      ${step(4, "If they push back", "Their most likely objections for this service, with your best rebuttal.", objs.length ? objs.map((o) => {
+        const r = sortedRebuttals(o)[0];
+        return `<div class="line"><span class="style" style="color:var(--ink);text-transform:none;letter-spacing:0;font-size:14px">${said(o.text)}</span>${r ? `<p>${fill(r.text, s)}</p><button class="btn copy-sm" data-copy="${esc(r.text)}">Copy</button>` : ""}</div>`;
+      }).join("") + `<button class="btn quiet" data-view="library">All objections →</button>` : `<p class="count">None tagged for this service yet.</p>`)}
+      ${step(5, "Close for the stop-by", "The goal is a 5-minute stop-by to drop off your card and a mockup.", s.close.map((c) => line("", c)).join(""))}
+    </ol>
+    <div class="two-col">
+      <div class="mini-card"><h4>No answer? Leave this voicemail</h4><p>${fill(s.voicemail, s)}</p><button class="btn copy-sm" data-copy="${esc(s.voicemail)}">Copy</button></div>
+      <div class="mini-card"><h4>Then send this text</h4><p>${fill(s.followup, s)}</p><button class="btn copy-sm" data-copy="${esc(s.followup)}">Copy</button></div>
+    </div>
+    <label class="switch-row"><input type="checkbox" data-founding role="switch" ${settings.founding_offer ? "checked" : ""}><span><b>Founding offer is open</b> (free full build-out for the first 10 clients). Shows the founding-offer lines. Off by default; turn it on only after you confirm.</span></label>
+    <p class="help" style="margin-top:8px"><span class="fill">Green</span> = filled in from this prospect. <span class="blank">[Yellow]</span> = fill in yourself.</p>`;
 }
-
-function renderPitch() {
-  renderBiz();
-  const recs = recommend(pitchState.biz);
-  $("#services").innerHTML = pitch.services.map((s) => `<button class="chip" data-svc="${s.id}" aria-pressed="${pitchState.svc === s.id}">${recs.includes(s.id) ? "★ " : ""}${esc(s.name)}</button>`).join("");
-  const s = pitch.services.find((x) => x.id === pitchState.svc) || pitch.services[0];
-  const objs = lib.objections.filter((o) => (o.services || []).includes(s.id)).sort((a, c) => likely(c) - likely(a));
-  const block = (title, html) => `<div class="script"><h3>${title}</h3>${html}</div>`;
-  const copyBtn = (text) => `<button class="btn" data-copy="${esc(text)}">Copy</button>`;
-  const say = (text) => `<p>${fill(text, s)}</p>`;
-  $("#pitchBody").innerHTML = `
-    <div class="svc-head"><h2>${esc(s.name)}</h2><p><b>${esc(s.plan)}</b> · ${esc(s.one_liner)}</p><p class="count">${esc(s.best_for)}</p></div>
-    <div class="flow">${pitch.flow.map((f, i) => `<div><b>${i + 1}. ${esc(f.step)}</b>${esc(f.say)}<em>Training: ${esc(f.ref)}</em></div>`).join("")}</div>
-    ${block("1. Opener", s.openers.filter((o) => !o.founding || settings.founding_offer).map((o) => `<div class="sub">${esc(o.style)}</div>${say(o.text)}`).join(""))}
-    ${block("2. Pitch (about 30 seconds, then stop)", say(s.pitch) + `<div class="sub">Or let them pick (three problems)</div>` + say(s.menu) + `<div class="sub">One-line value</div>` + say(s.value) + `<div class="sub">Customer story</div>` + say(s.story))}
-    ${block("3. Questions to ask", `<ol>${s.questions.map((q) => `<li>${fill(q, s)}</li>`).join("")}</ol>`)}
-    ${block("4. Common objections for this service", objs.length ? objs.slice(0, 12).map((o) => {
-      const r = sortedRebuttals(o)[0];
-      return `<div class="obj-mini"><button class="link" data-jump="${esc(o.id)}">${said(o.text)} →</button>${r ? `<p>${fill(r.text, s)}</p>` : ""}</div>`;
-    }).join("") : `<p class="count">None tagged yet.</p>`)}
-    ${block("5. Book the meeting", s.close.map((c) => say(c)).join(""))}
-    ${block("Voicemail", say(s.voicemail) + copyBtn(s.voicemail))}
-    ${block("Follow-up text", say(s.followup) + copyBtn(s.followup))}
-    <p class="count" style="margin-top:10px">${esc(pitch.fills)} Yellow brackets still need filling in.</p>`;
-}
-
-function searchBiz(q) {
-  if (!biz || q.length < 2) { $("#bizResults").innerHTML = ""; return; }
-  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
-  const hits = biz.businesses.filter((b) => words.every((w) => (b.name + " " + b.type).toLowerCase().includes(w))).slice(0, 8);
-  $("#bizResults").innerHTML = hits.map((b) => `<button data-biz="${biz.businesses.indexOf(b)}">${esc(b.name)} <small>· ${esc(b.type)} · ${b.pains.length} issue${b.pains.length === 1 ? "" : "s"}</small></button>`).join("") ||
-    `<p class="count">No matches.</p>`;
-}
-
-$("#bizQ").addEventListener("input", (e) => searchBiz(e.target.value.trim()));
-$("#foundingToggle").addEventListener("change", async (e) => {
-  try {
-    await DB.saveSetting("founding_offer", e.target.checked);
-    settings.founding_offer = e.target.checked;
-    toast(settings.founding_offer ? "Founding offer lines are now shown" : "Founding offer lines are hidden");
-  } catch (_) { toast("Couldn't save the setting"); }
-  renderPitch(); render();
+document.addEventListener("change", async (e) => {
+  if (e.target.dataset.founding === undefined) return;
+  const on = e.target.checked;
+  try { await DB.saveSetting("founding_offer", on); settings.founding_offer = on; toast(on ? "Founding offer lines are now shown" : "Founding offer lines are hidden"); }
+  catch (_) { e.target.checked = !on; toast("Couldn't save the setting"); }
+  if (current.lead && !$("#view-lead").hidden) renderLead();
+  render();
 });
-$("#owner").addEventListener("input", (e) => { pitchState.owner = e.target.value.trim(); renderPitch(); });
 document.addEventListener("click", async (e) => {
   const t = e.target.closest("button");
   if (!t) return;
-  if (t.dataset.biz !== undefined) {
-    pitchState.biz = biz.businesses[+t.dataset.biz];
-    const recs = recommend(pitchState.biz);
-    if (recs.length) pitchState.svc = recs[0];
-    $("#bizResults").innerHTML = ""; $("#bizQ").value = "";
-    renderPitch();
-  } else if (t.dataset.svc) { pitchState.svc = t.dataset.svc; renderPitch(); }
-  else if (t.hasAttribute("data-clear-biz")) { pitchState.biz = null; renderPitch(); }
+  if (t.dataset.svc) { pitchState.svc = t.dataset.svc; renderLead(); }
   else if (t.dataset.copy) {
-    const tmp = document.createElement("div"); tmp.innerHTML = fill(t.dataset.copy, pitch.services.find((x) => x.id === pitchState.svc));
+    const svc = pitch.services.find((x) => x.id === pitchState.svc) || {pains: []};
+    const tmp = document.createElement("div"); tmp.innerHTML = fill(t.dataset.copy, svc);
     try { await navigator.clipboard.writeText(tmp.textContent); toast("Copied"); } catch (_) { toast("Couldn't copy"); }
-  }
-  if (t.dataset.jump && t.closest("#view-pitch")) {
-    showView("library");
-    const el = document.querySelector(`#list [data-id="${t.dataset.jump}"]`);
-    el && el.scrollIntoView({block: "start"});
   }
 });
 
@@ -1412,7 +1613,15 @@ function cfDist(F, id) {
   if (memo[id]) return memo[id];
   const n = F.nodes[id];
   let d = new Array(CF_TIERS).fill(0);
+  if (!n) return d;  // 2026-11-01: a connection to a card that doesn't exist counts as "no outcome" instead of crashing
   if (n.type === "outcome") { d[n.tier - 1] = 1; return memo[id] = d; }
+  // 2026-11-01: loop guard. If the flow ever links back to an earlier card, the loop counts as "no outcome" instead of freezing the page
+  const visiting = F.visiting = F.visiting || new Set();
+  if (visiting.has(id)) return d;
+  visiting.add(id);
+  try { return memo[id] = cfDistInner(F, n, d); } finally { visiting.delete(id); }
+}
+function cfDistInner(F, n, d) {
   const replies = n.next.filter((e) => e.research !== undefined);
   if (replies.length) {  // the prospect decides: a weighted mix
     let w = replies.map((e) => cfProb(e).p);
@@ -1420,8 +1629,8 @@ function cfDist(F, id) {
     const total = w.reduce((a, b) => a + b, 0);
     replies.forEach((e, i) => cfDist(F, e.to).forEach((v, k) => d[k] += v * w[i] / total));
   } else if (n.next.length === 1) d = cfDist(F, n.next[0].to).slice();
-  else d = cfDist(F, cfBestOf(F, n.next.map((e) => e.to))).slice();  // Giles decides: his best line
-  return memo[id] = d;
+  else if (n.next.length) d = cfDist(F, cfBestOf(F, n.next.map((e) => e.to))).slice();  // Giles decides: his best line
+  return d;
 }
 const cfStopBy = (d) => d[0] + d[1];
 const cfAnyWin = (d) => d.slice(0, 6).reduce((a, b) => a + b, 0);
@@ -1465,8 +1674,18 @@ function cfStatsHtml(type) {
     <div class="stat"><b>${rate((c) => c.final_tier <= 6)}</b><span>any win (outcomes 1–6)</span></div></div>`;
 }
 
+// 2026-11-01 redesign: cfMeta works out a card's color and badges once, so the full card and the small "switch to" chip match
+function cfMeta(F, it, i, count) {
+  const {id, n, a} = it, isP = n.type === "prospect", sp = cfPct(cfStopBy(cfDist(F, id)));
+  const level = count <= 1 ? 1 : 1 + Math.round(4 * i / (count - 1));
+  const accent = isP ? `var(--l${level})` : `color-mix(in srgb, var(--green) ${30 + sp * 0.7}%, var(--line))`;
+  const pill = isP ? `<span class="cf-pill">${Math.round(a.p)}% likely</span>` : `<span class="cf-pill">${sp}% stop-by+</span>`;
+  const rank = isP ? "" : `<span class="cf-rank ${i === 0 ? "best" : ""}">#${i + 1}${i === 0 ? " Best" : ""}</span>`;
+  return {isP, sp, accent, pill, rank};
+}
+
 function cfCardHtml(F, ci, it, i, count) {
-  const {id, n, a} = it, picked = cf.path[ci] === id, other = cf.path[ci] && !picked;
+  const {id, n, a} = it, picked = cf.path[ci] === id;
   if (n.type === "outcome") {
     return `<div class="cf-out" style="--accent:${cfTierColor(n.tier)}">
       <div class="tier">Outcome #${n.tier}${n.is_main_goal ? `<span class="cf-goal">★ MAIN GOAL</span>` : ""}</div>
@@ -1475,19 +1694,22 @@ function cfCardHtml(F, ci, it, i, count) {
       <input type="text" id="cfNotes" placeholder="Notes (optional)" value="${esc(cf.notes)}" aria-label="Call notes">
       <div class="actions" style="justify-content:center;margin-top:10px"><button class="btn primary" id="cfLog">Log this call</button></div></div>`;
   }
-  const isP = n.type === "prospect", d = cfDist(F, id), sp = cfPct(cfStopBy(d));
-  const level = count <= 1 ? 1 : 1 + Math.round(4 * i / (count - 1));
-  const accent = isP ? `var(--l${level})` : `color-mix(in srgb, var(--green) ${30 + sp * 0.7}%, var(--line))`;
-  const badges = isP
-    ? `${a.src === "house" ? `<span class="cf-src house">IN-HOUSE · ${a.calls} calls</span>` : `<span class="cf-src">EST</span>`}<span class="cf-pill">${Math.round(a.p)}% likely</span>`
-    : `<span class="cf-rank ${i === 0 ? "best" : ""}">#${i + 1}${i === 0 ? " Best" : ""}</span><span class="cf-pill">${sp}% stop-by+</span>`;
-  return `<button class="cf-card ${picked ? "picked" : ""} ${other ? "compact" : ""}" data-cf-pick="${ci}" data-cf-id="${esc(id)}" style="--accent:${accent}" title="${esc(n.research_source || "")}">
-    <span class="cf-top"><span class="who">${isP ? "Prospect might say" : n.type === "opener" ? "You · opener" : "You"}</span><span class="badges">${badges}</span></span>
+  const m = cfMeta(F, it, i, count), isP = m.isP;
+  const src = isP ? (a.src === "house" ? `<span class="cf-src house">IN-HOUSE · ${a.calls} calls</span>` : `<span class="cf-src">EST</span>`) : "";
+  const who = picked ? `<span class="cf-chosen">✓ ${isP ? "They said this" : n.type === "opener" ? "Your opener" : "Your line"}</span>`
+    : `<span class="who">${isP ? "Prospect might say" : n.type === "opener" ? "You · opener" : "You say"}</span>`;
+  return `<button class="cf-card ${picked ? "picked" : ""}" data-cf-pick="${ci}" data-cf-id="${esc(id)}" style="--accent:${m.accent}" title="${esc(n.research_source || "")}" ${picked ? 'aria-current="step"' : ""}>
+    <span class="cf-top">${who}<span class="badges">${src}${m.rank}${m.pill}</span></span>
     <span class="cf-label">${esc(n.label)}${n.is_placeholder ? `<span class="cf-ph">PLACEHOLDER</span>` : ""}</span>
     <span class="cf-text ${isP ? "say" : ""}">${isP ? "“" + cfText(F, n.script) + "”" : cfText(F, n.script)}</span>
     ${n.lead_hint && cf.lead && cf.lead[n.lead_hint] && !/not (retrieved|found|available)|unknown/i.test(cf.lead[n.lead_hint]) ? `<span class="cf-hint-lead"><b>${CF_LEAD_HINT[n.lead_hint]}:</b> ${esc(cf.lead[n.lead_hint])}</span>` : ""}
     ${n.tip ? `<span class="cf-tip"><b>Tip:</b> ${esc(n.tip)}</span>` : ""}
-    <span class="cf-meter"><i style="width:${isP ? Math.round(a.p) : sp}%"></i></span></button>`;
+    <span class="cf-meter"><i style="width:${isP ? Math.round(a.p) : m.sp}%"></i></span></button>`;
+}
+// The small chip for an option you didn't pick: tap it to switch to that branch
+function cfAltHtml(F, ci, it, i, count) {
+  const m = cfMeta(F, it, i, count);
+  return `<button class="cf-alt" data-cf-pick="${ci}" data-cf-id="${esc(it.id)}" style="--accent:${m.accent}" title="Switch to this option">${esc(it.n.label)} ${m.isP ? m.pill : m.rank || m.pill}</button>`;
 }
 
 function cfTrackerHtml(F) {
@@ -1521,31 +1743,31 @@ function cfRender() {
   let html = "";
   for (let ci = 0; ci < rows; ci++) {
     const items = cfItems(F, ci), type = items[0].n.type;
-    const cards = items.map((it, i) => cfCardHtml(F, ci, it, i, items.length));
     const at = items.findIndex((it) => it.id === cf.path[ci]);
-    let inner = cards.join("");
-    if (at >= 0) {  // the pick in the center; the rest alternate right and left, best ranked nearest the center
-      const rest = cards.filter((_, i) => i !== at), left = [], right = [];
-      rest.forEach((c, k) => (k % 2 === 0 ? right.push(c) : left.unshift(c)));
-      inner = `<div class="cf-side left">${left.join("")}</div>${cards[at]}<div class="cf-side right">${right.join("")}</div>`;
+    let inner;
+    if (at < 0) inner = `<div class="cf-cards">${items.map((it, i) => cfCardHtml(F, ci, it, i, items.length)).join("")}</div>`;
+    else {  // 2026-11-01: the pick shows as one big card; every other option stays visible as a wrapping row of chips
+      const others = items.map((it, i) => (i === at ? "" : cfAltHtml(F, ci, it, i, items.length))).join("");
+      inner = `<div class="cf-picked">${cfCardHtml(F, ci, items[at], at, items.length)}</div>` +
+        (others ? `<div class="cf-others"><span>${type === "prospect" ? "Or they said:" : "Other options:"}</span>${others}</div>` : "");
     }
-    html += `<div class="cf-row ${at >= 0 ? "has-pick" : ""} ${cf.justPicked === ci ? "just-picked" : ""}"><div class="cf-head"><span class="cf-step">${ci + 1}</span><span class="cf-title">${CF_TITLES[type]}</span><span class="cf-hint">${CF_HINTS[type]}</span></div>
-      <div class="cf-cards">${inner}</div></div>`;
+    html += `<div class="cf-row ${at >= 0 ? "has-pick" : ""} ${cf.justPicked === ci ? "just-picked" : ""}"><div class="cf-head"><span class="cf-step">${at >= 0 && type !== "outcome" ? "✓" : ci + 1}</span><span class="cf-title">${CF_TITLES[type]}</span><span class="cf-hint">${CF_HINTS[type]}</span></div>
+      ${inner}</div>`;
   }
   cf.justPicked = -1;  // the pop animation plays once, on the row just clicked
   const lastCall = cfData.calls[cfData.calls.length - 1];
   box.innerHTML = `<div class="cf-bar-top"><h3>Cold call flow${cf.lead ? `: ${esc(cf.lead.name)}` : ""}</h3>
     <div class="cf-controls">
-      <div class="cf-seg" title="Where the prospect-reply percentages come from"><span>Data</span>
+      <div class="cf-seg" title="Research est. uses research data. In-house switches to your own logged calls once a card has ${CF_MIN_CALLS}+."><span>Data</span>
         <button data-cf-src="research" aria-pressed="${cf.source === "research"}">Research est.</button><button data-cf-src="inhouse" aria-pressed="${cf.source === "inhouse"}">In-house</button></div>
       <button class="btn primary" id="cfBest">Show most probable path</button>
-      <button class="btn" id="cfPanelBtn">Goals &amp; transcript (T)</button>
+      <button class="btn" id="cfPanelBtn">Goals &amp; transcript<span class="kbd"> (T)</span></button>
       <button class="btn" id="cfReset">Start over</button>
       ${lastCall ? `<button class="btn quiet" id="cfUndo">Undo last logged call</button>` : ""}</div></div>
+    <p class="help" style="margin:0 0 8px">Tap your opener, then what they said, then your next line. Tap a chip to switch. <b>Stop-by+</b> = the chance this call ends in a stop-by or better.</p>
     ${cfTrackerHtml(F)}
-    <div class="cf-track" id="cfTrack"><svg class="cf-wires" id="cfWires"></svg>${html}</div>`;
+    <div class="cf-track" id="cfTrack">${html}</div>`;
   cfPanelRender(F);
-  requestAnimationFrame(cfWires);
 }
 
 function cfPick(ci, id) {
@@ -1576,26 +1798,8 @@ function cfScroll() {
   window.scrollTo({top: Math.max(0, top), behavior: "smooth"});
 }
 
-function cfWires() {
-  const track = $("#cfTrack"), svg = $("#cfWires");
-  if (!track || !svg || getComputedStyle(svg).display === "none") return;
-  const tr = track.getBoundingClientRect(), rows = [...track.querySelectorAll(".cf-row")];
-  svg.setAttribute("width", track.scrollWidth); svg.setAttribute("height", track.scrollHeight);
-  let out = "";
-  cf.path.forEach((id, ci) => {
-    const from = rows[ci] && rows[ci].querySelector(`[data-cf-id="${CSS.escape(id)}"]`), next = rows[ci + 1];
-    if (!from || !next) return;
-    const f = from.getBoundingClientRect(), x1 = f.left + f.width / 2 - tr.left, y1 = f.bottom - tr.top;
-    next.querySelectorAll(".cf-card, .cf-out").forEach((to) => {
-      const t = to.getBoundingClientRect(), x2 = t.left + t.width / 2 - tr.left, y2 = t.top - tr.top, my = (y1 + y2) / 2;
-      const chosen = !to.dataset.cfId || cf.path[ci + 1] === to.dataset.cfId;
-      out += `<path d="M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}" fill="none" style="stroke:${to.style.getPropertyValue("--accent") || "var(--line)"}"
-        stroke-width="${chosen ? 3.5 : 1.6}" stroke-opacity="${cf.path[ci + 1] ? (chosen ? 1 : 0.18) : 0.55}"/>`;
-    });
-    out += `<circle cx="${x1}" cy="${y1}" r="5" style="fill:var(--ink)"/>`;
-  });
-  svg.innerHTML = out;
-}
+// 2026-11-01: the curved connector lines were removed with the redesign; the numbered timeline on the left shows the path now
+function cfWires() {}
 
 function cfPanelRender(F) {
   let panel = $("#cfPanel");
@@ -1623,6 +1827,7 @@ async function cfLogCall() {
   try {
     const saved = await DB.logCall({niche: cf.niche, lead: cf.lead ? cf.lead.id : "", tier: end.tier, notes, steps: cf.path.filter((id) => F.nodes[id].type !== "outcome")});
     cfData.calls.push(saved);
+    if (cf.lead && !isSpoke(cf.lead.id)) toggleSpoke(cf.lead.id, true);  // 2026-11-02: logging a call checks the prospect off
     await cfRefreshHouse();
     toast(`Call logged: #${end.tier} ${end.short}`);
     cf.path = []; cf.notes = "";
@@ -1645,7 +1850,7 @@ async function cfUndo() {
   } catch (_) { toast("Couldn't undo. Check your connection."); }
 }
 // Redraw the whole niche or lead page, so the call counts above the flow update too
-function cfRerender() { cf.lead && !$("#view-lead").hidden ? renderLead() : renderNiche(); }
+function cfRerender() { renderNiche(); }  // 2026-11-02: the call flow only lives on the Flow chart tab now
 async function cfRefreshHouse() {
   try { cfData.house = await DB.houseStats(); } catch (_) {}
   cfData.built = {};
@@ -1678,13 +1883,192 @@ document.addEventListener("keydown", (e) => {
 });
 window.addEventListener("resize", () => { if ($("#cf")) requestAnimationFrame(cfWires); });
 
+
+
+// ---------- 2026-11-02: Practice tab. "Practice call" role-plays a niche's flow chart: you pick your lines,
+// the app answers as the prospect (replies drawn by how likely they are), and you see how often you picked the best line. ----------
+let pmode = "call", pc = null;
+function renderPractice() {
+  document.querySelectorAll("[data-pmode]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.pmode === pmode));
+  $("#drillBox").hidden = pmode !== "drill"; $("#pcBody").hidden = pmode !== "call";
+  if (pmode === "drill") { render(); return; }
+  renderPC();
+}
+const pcNiches = () => (sales ? sales.niches.filter((n) => cfFlow(n.type)).sort((a, b) => isPriority(b.type) - isPriority(a.type)) : []);
+const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function pcStart(type) {
+  const F = cfFlow(type); if (!F) return;
+  F.memo = null;
+  pc = {type, steps: [], waiting: shuffle(F.openers), best: 0, turns: 0, done: false};
+  renderPC();
+}
+function pcPick(id) {
+  const F = cfFlow(pc.type), ranked = pc.waiting.slice().sort((a, b) => cfRankKey(cfDist(F, b)) - cfRankKey(cfDist(F, a)));
+  const rank = ranked.indexOf(id);
+  pc.steps.push({who: "you", id, rank, best: ranked[0], options: ranked.length});
+  pc.turns++; if (rank === 0) pc.best++;
+  pc.waiting = null;
+  pcAdvance(F, id);
+  renderPC();
+  requestAnimationFrame(() => { const el = document.querySelector("#pcBody .pc-now"); el && el.scrollIntoView({behavior: "smooth", block: "center"}); });
+}
+function pcAdvance(F, id) {
+  for (let guard = 0; guard < 40; guard++) {
+    const n = F.nodes[id];
+    if (!n || n.type === "outcome") { pc.steps.push({who: "result", id}); pc.done = true; return; }
+    const edges = n.next || [];
+    if (!edges.length) { pc.done = true; return; }
+    if (edges[0].research !== undefined) {  // the prospect answers: pick a reply by its odds
+      const w = edges.map((e) => Math.max(0, cfProb(e).p) || 0.01), total = w.reduce((a, b) => a + b, 0);
+      let r = Math.random() * total, k = 0;
+      while (k < edges.length - 1 && (r -= w[k]) > 0) k++;
+      id = edges[k].to;
+      if (F.nodes[id] && F.nodes[id].type === "outcome") { pc.steps.push({who: "result", id}); pc.done = true; return; }
+      pc.steps.push({who: "them", id});
+      continue;
+    }
+    const nexts = edges.map((e) => e.to);
+    if (nexts.length === 1 && F.nodes[nexts[0]] && F.nodes[nexts[0]].type === "outcome") { pc.steps.push({who: "result", id: nexts[0]}); pc.done = true; return; }
+    pc.waiting = shuffle(nexts); return;  // your turn
+  }
+  pc.done = true;
+}
+function renderPC() {
+  if (!sales) { $("#pcBody").innerHTML = `<div class="loading">Loading…</div>`; return; }
+  const niches = pcNiches();
+  if (!niches.length) { $("#pcBody").innerHTML = `<div class="empty">No niche has a full call flow yet, so there's nothing to role-play. Try the objection drill.</div>`; return; }
+  if (!pc || !cfFlow(pc.type)) { pc = null; }
+  const saveLead = cf.lead; cf.lead = null;  // practice calls are general: names show as blanks
+  const F = pc && cfFlow(pc.type), say = (id) => cfText(F, F.nodes[id].script);
+  let html = `<p class="help" style="margin-top:14px">The app plays the prospect and answers the way real prospects most often do. You pick your lines. After each pick you'll see if it was the best move.</p>
+    <div class="label">Niche</div><div class="chips">${niches.map((n) => `<button class="chip" data-pc-start="${esc(n.type)}" aria-pressed="${pc && pc.type === n.type}">${esc(n.type)}</button>`).join("")}</div>`;
+  if (!pc) html += `<div class="empty"><button class="btn primary big-cta" data-pc-start="${esc(niches[0].type)}">Start a practice call: ${esc(niches[0].type)}</button></div>`;
+  else {
+    html += `<div class="pc-chat">${pc.steps.map((st) => {
+      const n = F.nodes[st.id];
+      if (st.who === "them") return `<div class="pc-msg them"><span class="pc-who">Prospect</span><p>“${say(st.id)}”</p></div>`;
+      if (st.who === "you") return `<div class="pc-msg you"><span class="pc-who">You · ${esc(n.label)}</span><p>${say(st.id)}</p></div>
+        <div class="pc-note ${st.rank === 0 ? "good" : "meh"}">${st.options < 2 ? "Only one line here." : st.rank === 0 ? "✓ Best move of " + st.options : `#${st.rank + 1} of ${st.options}. Best was <b>${esc(F.nodes[st.best].label)}</b>`}</div>`;
+      return `<div class="pc-result" style="--accent:${cfTierColor(n.tier)}"><span class="tier">Outcome #${n.tier}${n.is_main_goal ? ` <span class="cf-goal">★ MAIN GOAL</span>` : ""}</span>
+        <b>${CF_GROUP[n.outcome_group] || ""}</b><p>${esc(n.label)}</p>
+        <p class="help">You picked the best line <b>${pc.best} of ${pc.turns}</b> time${pc.turns === 1 ? "" : "s"}.</p>
+        <button class="btn primary" data-pc-start="${esc(pc.type)}">Practice again</button></div>`;
+    }).join("")}</div>`;
+    if (pc.waiting) html += `<div class="pc-now"><div class="label">${pc.steps.length ? "Your turn: what do you say?" : "Pick your opener"}</div>
+      <div class="cf-cards">${pc.waiting.map((id) => `<button class="cf-card" data-pc-pick="${esc(id)}" style="--accent:var(--green)"><span class="cf-label">${esc(F.nodes[id].label)}</span><span class="cf-text">${say(id)}</span></button>`).join("")}</div></div>`;
+    else if (!pc.done) html += `<p class="help">This branch ends without a result in the flow chart.</p>`;
+  }
+  cf.lead = saveLead;
+  $("#pcBody").innerHTML = html;
+}
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.pmode) { pmode = t.dataset.pmode; renderPractice(); }
+  else if (t.dataset.pcStart) pcStart(t.dataset.pcStart);
+  else if (t.dataset.pcPick) pcPick(t.dataset.pcPick);
+});
+
+// ---------- 2026-11-02: Learn tab. Sales methods and quotes come from the research database:
+// the content table, key "learn" = {methods: [{name, category, summary, when, how, example, why, source}], quotes: [{text, by, source, note}]}.
+// Objections and call tips come from the library like before. ----------
+let learnTab = "methods", learnDoc = null, learnQ = "", learnCat = "";
+async function renderLearn() {
+  document.querySelectorAll(".seg-tabs [data-learn]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.learn === learnTab || (learnTab === "add" && b.dataset.learn === "objections")));
+  ["methods", "quotes", "objections", "tips", "add"].forEach((k) => $("#learn-" + k).hidden = k !== learnTab);
+  if (["objections", "tips", "add"].includes(learnTab)) { render(); return; }
+  if (learnDoc === null) {
+    try { learnDoc = (await DB.content("learn")) || {}; } catch (_) { learnDoc = {error: true}; }
+  }
+  const box = $("#learn-" + learnTab);
+  if (learnDoc.error) { box.innerHTML = `<div class="empty">Couldn't load your research. Check your connection.</div>`; learnDoc = null; return; }
+  const empty = (what) => `<div class="empty"><p><b>No ${what} loaded yet.</b></p><p class="help">They come from your research database (content table, key <code>learn</code>). Once that's filled in, they show up here.</p></div>`;
+  if (learnTab === "quotes") {
+    const qs = learnDoc.quotes || [];
+    // 2026-11-02: the Training Library keeps book lessons as paraphrases (no long book text), so only real quotes get quote marks
+    const real = qs.filter((q) => !q.paraphrase), lessons = qs.filter((q) => q.paraphrase);
+    const books = [...new Set(lessons.map((q) => q.source))];
+    box.innerHTML = qs.length ? `<p class="help" style="margin-top:14px">Key lessons from ${books.length} sales books, in plain words. Only the lines in quote marks are the authors' own words.</p>
+      ${real.length ? `<div class="quote-grid">${real.map((q) => `<figure class="quote"><blockquote>“${esc(q.text)}”</blockquote>
+        <figcaption>${esc(q.by || "")}${q.source ? `<span>${esc(q.source)}</span>` : ""}</figcaption></figure>`).join("")}</div>` : ""}
+      ${books.map((b) => { const ls = lessons.filter((q) => q.source === b);
+        return `<details class="fold"><summary>${esc(b)} <span>${esc(ls[0].by || "")} · ${ls.length} lessons</span></summary><div class="fold-body"><ol class="m-how">${ls.map((q) => `<li>${esc(q.text)}</li>`).join("")}</ol></div></details>`; }).join("")}` : empty("book lessons");
+    return;
+  }
+  const ms = learnDoc.methods || [];
+  if (!ms.length) { box.innerHTML = empty("sales methods"); return; }
+  const cats = [...new Set(ms.map((m) => m.category).filter(Boolean))];
+  const words = learnQ.toLowerCase().split(/\s+/).filter(Boolean);
+  const shown = ms.filter((m) => (!learnCat || m.category === learnCat) && words.every((w) => Object.values(m).join(" ").toLowerCase().includes(w)));
+  const list = (v) => (Array.isArray(v) ? `<ol class="m-how">${v.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>` : `<p>${esc(v)}</p>`);
+  const cards = shown.map((m) => `<article class="method">
+      <div class="method-top"><h3>${esc(m.name)}</h3><span>${m.avoid ? `<span class="flag">Don't do this</span> ` : ""}${m.category ? `<span class="pill">${esc(m.category)}</span>` : ""}</span></div>
+      ${m.summary ? `<p class="m-sum">${esc(m.summary)}</p>` : ""}
+      <div class="m-grid">${m.when ? `<div><span class="label">When to use it</span>${list(m.when)}</div>` : ""}${m.how ? `<div><span class="label">How to do it</span>${list(m.how)}</div>` : ""}</div>
+      ${m.example ? `<div class="m-say"><span class="label">Say it like this</span><p style="white-space:pre-wrap">${esc(m.example)}</p><button class="btn copy-sm" data-copytext="${esc(m.example)}">Copy</button></div>` : ""}
+      ${m.why ? `<p class="help"><b>Why it works:</b> ${esc(m.why)}</p>` : ""}
+      ${(m.mistakes && m.mistakes.length) || m.drill ? `<details class="more-lines"><summary>${m.category === "Sales methodologies" ? "Weaknesses" : "Common mistakes and a practice drill"}</summary>
+        ${m.mistakes && m.mistakes.length ? `<ul class="m-how">${m.mistakes.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}${m.drill ? `<p class="help"><b>Practice drill:</b> ${esc(m.drill)}</p>` : ""}</details>` : ""}
+      ${m.source ? `<p class="m-src">Source: ${esc(m.source)}</p>` : ""}</article>`).join("") || `<div class="empty">Nothing matches.</div>`;
+  if (!box.querySelector("#learnSearch")) {
+    box.innerHTML = `<div class="search"><input id="learnSearch" type="search" placeholder="Search methods (e.g. gatekeeper, price, rapport)…" autocomplete="off" aria-label="Search sales methods"></div>
+      <div class="chips" id="learnCats"></div><p class="count" id="learnCount" style="margin:12px 0 8px"></p><div class="method-list" id="learnList"></div>`;
+    box.querySelector("#learnSearch").value = learnQ;
+  }
+  $("#learnCats").innerHTML = cats.length ? `<button class="chip" data-learn-cat="" aria-pressed="${!learnCat}">All</button>` + cats.map((c) => `<button class="chip" data-learn-cat="${esc(c)}" aria-pressed="${learnCat === c}">${esc(c)}</button>`).join("") : "";
+  $("#learnCount").textContent = `${shown.length} of ${ms.length} methods`;
+  $("#learnList").innerHTML = cards;
+}
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.learn) { learnTab = t.dataset.learn; $("#view-learn").hidden ? showView("learn") : renderLearn(); }
+  else if (t.dataset.learnCat !== undefined) { learnCat = t.dataset.learnCat; renderLearn(); }
+});
+document.addEventListener("input", (e) => { if (e.target.id === "learnSearch") { learnQ = e.target.value.trim(); renderLearn(); } });
+
+// ---------- 2026-11-01: light / dark switch ----------
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  try { localStorage.setItem("lfs-theme", t); } catch (_) {}
+  $("#themeBtn").textContent = t === "dark" ? "☀️" : "🌙";
+  $("#themeBtn").setAttribute("aria-label", t === "dark" ? "Switch to light mode" : "Switch to dark mode");
+  $('meta[name="theme-color"]').setAttribute("content", t === "dark" ? "#1f1a1d" : "#F6F3ED");
+}
+const toggleTheme = () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+$("#themeBtn").addEventListener("click", toggleTheme);
+setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+
+// ---------- 2026-11-01: quick "They said…" search from any screen ----------
+function qsRender() {
+  const q = $("#qsInput").value.trim().toLowerCase(), words = q.split(/\s+/).filter(Boolean);
+  const hits = lib.objections.filter((o) => !words.length || words.every((w) => (o.text + " " + o.variants.join(" ")).toLowerCase().includes(w)))
+    .sort((a, b) => likely(b) - likely(a)).slice(0, words.length ? 8 : 5);
+  $("#qsResults").innerHTML = (words.length ? "" : `<p class="help" style="margin:4px 2px 0">Most likely to hear:</p>`) + (hits.map((o) => {
+    const r = sortedRebuttals(o)[0];
+    return `<div class="qs-hit"><h3>${said(o.text)}</h3>${r ? `<span class="style">${esc(r.style)}</span><p>${esc(r.text)}</p>` : `<p class="count">No rebuttal yet.</p>`}
+      <div class="actions">${r ? `<button class="btn" data-copytext="${esc(r.text)}">Copy</button>` : ""}<button class="btn quiet" data-qs-open="${esc(o.id)}">All ${o.rebuttals.length} rebuttal${o.rebuttals.length === 1 ? "" : "s"} →</button></div></div>`;
+  }).join("") || `<div class="empty"><p>Nothing matches “${esc(q)}”.</p><button class="btn primary" data-qs-add>Save it as a new objection</button></div>`);
+}
+$("#fab").addEventListener("click", () => { $("#qsInput").value = ""; qsRender(); $("#qs").showModal(); $("#qsInput").focus(); });
+$("#qsInput").addEventListener("input", qsRender);
+$("#qsClose").addEventListener("click", () => $("#qs").close());
+$("#qs").addEventListener("click", (e) => {
+  if (e.target === $("#qs")) return $("#qs").close();  // tap outside the box closes it
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.qsOpen) { $("#qs").close(); state.q = ""; $("#q").value = ""; state.levels.clear(); state.cat = ""; state.open.add(t.dataset.qsOpen); showView("library"); render();
+    const el = document.querySelector(`#list [data-id="${CSS.escape(t.dataset.qsOpen)}"]`); el && el.scrollIntoView({block: "start"}); }
+  if (t.hasAttribute("data-qs-add")) { const q = $("#qsInput").value.trim(); $("#qs").close(); showView("add"); $("#addForm").text.value = q; }
+});
+
 // ---------- Start: sign in, then load ----------
 async function start() {
   $("#signin").hidden = true; $("#signOut").hidden = false;
   render();  // 2026-11-01: shows the loading spinner right away instead of a blank page
   syncHeadHeight(); updateTabFade();
   try { settings = {founding_offer: false, ...(await DB.settings())}; } catch (_) {}
-  try { const v = localStorage.getItem("lfs-rebuttals-view"); if (v) showView(v); } catch (_) {}
+  try { spoke = await DB.spoke(); } catch (_) { toast("Couldn't load who you've spoken to. Check your connection."); }
+  let v = "flow";
+  try { v = localStorage.getItem("lfs-rebuttals-view") || "flow"; } catch (_) {}
+  showView(v);
   load();
 }
 $("#signinForm").addEventListener("submit", async (e) => {
