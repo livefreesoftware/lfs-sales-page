@@ -4,7 +4,7 @@
 try { if (localStorage.getItem("lfs-theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (_) {}</script>
 <head>
 <meta charset="utf-8">
-<meta name="lfs-build" content="1d43a67">
+<meta name="lfs-build" content="98e704a">
 <!--
   2026-11-01 polish pass (from a full click-through test on desktop 1440px + phone 390px). Every change is marked "2026-11-01" in place.
   Bugs fixed: blank page when the app reopened on a lead; Services showed "None tagged yet" when reopened; the Goals & transcript
@@ -527,18 +527,45 @@ try { if (localStorage.getItem("lfs-theme") === "dark") document.documentElement
   .pc-result p { margin: 4px 0; }
   .pc-now { margin-top: 18px; scroll-margin: 120px; }
   .pc-now .cf-card::before { background: var(--green); }
-  /* Learn */
-  .method-list { display: grid; gap: 12px; }
-  .method { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
-  .method-top { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
-  .method h3 { font-size: 20px; }
-  .m-sum { margin: 6px 0 0; color: var(--ink); font-size: 15.5px; }
-  .m-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 4px 18px; }
-  .m-grid p, .m-how { margin: 0; color: var(--ink); white-space: pre-line; }
-  .m-how { padding-left: 20px; }
-  .m-say { background: var(--bg); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 10px 12px; margin-top: 12px; }
-  .m-say p { margin: 2px 0 6px; font-size: 16px; color: var(--ink); }
-  .m-src { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+  /* Learn. 2026-11-02: methods are short cards you open one at a time, grouped in call order, so the tab reads like flash cards, not a wall of text */
+  .method-list { display: grid; gap: 10px; }
+  .lm-group { font-family: Fraunces, Georgia, serif; font-size: 19px; color: var(--ink); margin: 22px 0 2px; display: flex; align-items: baseline; gap: 8px; }
+  .lm-group span { font-family: "Plus Jakarta Sans", sans-serif; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+  .lm-group-note { margin: 0 0 4px; font-size: 13.5px; color: var(--muted); }
+  .lm { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--green); border-radius: 14px; }
+  .lm.avoid { border-left-color: var(--danger); }
+  .lm > summary { list-style: none; cursor: pointer; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: start; }
+  .lm > summary::-webkit-details-marker { display: none; }
+  .lm > summary::after { content: "▾"; color: var(--muted); font-size: 16px; grid-column: 2; grid-row: 1; transition: transform .15s; }
+  .lm[open] > summary::after { transform: rotate(180deg); }
+  .lm-name { font-family: Fraunces, Georgia, serif; font-size: 17.5px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .lm-gist { grid-column: 1 / -1; margin: 0; color: var(--text); font-size: 14.5px; }
+  .lm[open] .lm-gist { color: var(--ink); }
+  .lm-body { padding: 0 14px 14px; display: grid; gap: 14px; }
+  .lm-body .label { margin: 0 0 6px; }
+  .m-say { background: var(--bg); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 10px 12px; }
+  .m-say p { margin: 0 0 8px; font-size: 16px; line-height: 1.5; color: var(--ink); white-space: pre-wrap; }
+  .lm-rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .lm-rules li { display: grid; gap: 1px; padding-left: 12px; border-left: 2px solid var(--line); color: var(--ink); }
+  .lm-rules .if { font-size: 13px; color: var(--muted); }
+  .lm-rules .if b { color: var(--text); font-weight: 600; }
+  .m-how { margin: 0; padding-left: 22px; color: var(--ink); display: grid; gap: 6px; }
+  .lm-why { margin: 0; color: var(--text); }
+  .lm-why b, .lesson b { color: var(--ink); font-weight: 600; }
+  .lm-drill { background: color-mix(in srgb, var(--green) 10%, transparent); border-radius: 12px; padding: 10px 12px; margin: 10px 0 0; color: var(--ink); }
+  .m-src { font-size: 12px; color: var(--muted); margin: 0; }
+  .lm-pick { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-top: 14px; }
+  .lm-pick .label { margin-top: 0; }
+  .lm-pick .lm { border: 0; border-radius: 0; }
+  .lm-pick .lm > summary, .lm-pick .lm-body { padding-left: 0; padding-right: 0; }
+  @media (max-width: 700px) {  /* one swipeable row of stages instead of a wall of chips */
+    #learnCats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+    #learnCats::-webkit-scrollbar { display: none; }
+    #learnCats .chip { flex: none; }
+  }
+  .lessons { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .lesson { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; color: var(--text); }
+  .lesson .n { width: 24px; height: 24px; border-radius: 999px; background: var(--tan); color: var(--ink); font-size: 12px; font-weight: 700; display: grid; place-items: center; margin-top: 1px; }
   .quote-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 12px; margin-top: 14px; }
   .quote { margin: 0; background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--green); border-radius: 14px; padding: 16px 18px; }
   .quote blockquote { margin: 0; font-family: Fraunces, Georgia, serif; font-size: 19px; line-height: 1.4; color: var(--ink); }
@@ -2007,36 +2034,75 @@ async function renderLearn() {
     // 2026-11-02: the Training Library keeps book lessons as paraphrases (no long book text), so only real quotes get quote marks
     const real = qs.filter((q) => !q.paraphrase), lessons = qs.filter((q) => q.paraphrase);
     const books = [...new Set(lessons.map((q) => q.source))];
-    box.innerHTML = qs.length ? `<p class="help" style="margin-top:14px">Key lessons from ${books.length} sales books, in plain words. Only the lines in quote marks are the authors' own words.</p>
+    box.innerHTML = qs.length ? `<p class="help" style="margin-top:14px">The big ideas from ${books.length} sales books, in plain words. Open a book; the bold line is the lesson, the rest is how to use it. Only lines in quote marks are the authors' own words.</p>
       ${real.length ? `<div class="quote-grid">${real.map((q) => `<figure class="quote"><blockquote>“${esc(q.text)}”</blockquote>
         <figcaption>${esc(q.by || "")}${q.source ? `<span>${esc(q.source)}</span>` : ""}</figcaption></figure>`).join("")}</div>` : ""}
       ${books.map((b) => { const ls = lessons.filter((q) => q.source === b);
-        return `<details class="fold"><summary>${esc(b)} <span>${esc(ls[0].by || "")} · ${ls.length} lessons</span></summary><div class="fold-body"><ol class="m-how">${ls.map((q) => `<li>${esc(q.text)}</li>`).join("")}</ol></div></details>`; }).join("")}` : empty("book lessons");
+        return `<details class="fold"><summary>${esc(b)} <span>${esc(ls[0].by || "")} · ${ls.length} lessons</span></summary><div class="fold-body"><ol class="lessons">${ls.map((q, i) => `<li class="lesson"><span class="n">${i + 1}</span><span>${lmLead(q.text)}</span></li>`).join("")}</ol></div></details>`; }).join("")}` : empty("book lessons");
     return;
   }
   const ms = learnDoc.methods || [];
   if (!ms.length) { box.innerHTML = empty("sales methods"); return; }
-  const cats = [...new Set(ms.map((m) => m.category).filter(Boolean))];
+  const cats = [...new Set([...LM_ORDER, ...ms.map((m) => m.category)])].filter((c) => ms.some((m) => m.category === c));
   const words = learnQ.toLowerCase().split(/\s+/).filter(Boolean);
   const shown = ms.filter((m) => (!learnCat || m.category === learnCat) && words.every((w) => Object.values(m).join(" ").toLowerCase().includes(w)));
-  const list = (v) => (Array.isArray(v) ? `<ol class="m-how">${v.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>` : `<p>${esc(v)}</p>`);
-  const cards = shown.map((m) => `<article class="method">
-      <div class="method-top"><h3>${esc(m.name)}</h3><span>${m.avoid ? `<span class="flag">Don't do this</span> ` : ""}${m.category ? `<span class="pill">${esc(m.category)}</span>` : ""}</span></div>
-      ${m.summary ? `<p class="m-sum">${esc(m.summary)}</p>` : ""}
-      <div class="m-grid">${m.when ? `<div><span class="label">When to use it</span>${list(m.when)}</div>` : ""}${m.how ? `<div><span class="label">How to do it</span>${list(m.how)}</div>` : ""}</div>
-      ${m.example ? `<div class="m-say"><span class="label">Say it like this</span><p style="white-space:pre-wrap">${esc(m.example)}</p><button class="btn copy-sm" data-copytext="${esc(m.example)}">Copy</button></div>` : ""}
-      ${m.why ? `<p class="help"><b>Why it works:</b> ${esc(m.why)}</p>` : ""}
-      ${(m.mistakes && m.mistakes.length) || m.drill ? `<details class="more-lines"><summary>${m.category === "Sales methodologies" ? "Weaknesses" : "Common mistakes and a practice drill"}</summary>
-        ${m.mistakes && m.mistakes.length ? `<ul class="m-how">${m.mistakes.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}${m.drill ? `<p class="help"><b>Practice drill:</b> ${esc(m.drill)}</p>` : ""}</details>` : ""}
-      ${m.source ? `<p class="m-src">Source: ${esc(m.source)}</p>` : ""}</article>`).join("") || `<div class="empty">Nothing matches.</div>`;
+  // Grouped in call order; within a group, the ones to use first and the "don't do this" ones last
+  const groups = cats.map((c) => [c, shown.filter((m) => m.category === c).sort((a, b) => a.avoid - b.avoid)]).filter(([, l]) => l.length);
+  const pickHtml = !learnCat && !words.length ? (() => {  // one method a day, the same all day, so there's always one thing to practice
+    const pool = ms.filter((m) => !m.avoid && m.example), day = Math.floor((Date.now() - new Date().getTimezoneOffset() * 6e4) / 864e5);
+    return pool.length ? `<div class="lm-pick"><span class="label">Today's method · practice this one on your calls</span>${lmCard(pool[day % pool.length], false)}</div>` : "";
+  })() : "";
+  const listHtml = groups.map(([c, l]) => `${groups.length > 1 || !learnCat ? `<h3 class="lm-group">${esc(c)} <span>${l.length}</span></h3>${LM_NOTES[c] ? `<p class="lm-group-note">${LM_NOTES[c]}</p>` : ""}` : ""}
+      ${l.map((m) => lmCard(m, shown.length === 1)).join("")}`).join("") || `<div class="empty">Nothing matches.</div>`;
   if (!box.querySelector("#learnSearch")) {
     box.innerHTML = `<div class="search"><input id="learnSearch" type="search" placeholder="Search methods (e.g. gatekeeper, price, rapport)…" autocomplete="off" aria-label="Search sales methods"></div>
-      <div class="chips" id="learnCats"></div><p class="count" id="learnCount" style="margin:12px 0 8px"></p><div class="method-list" id="learnList"></div>`;
+      <div class="chips" id="learnCats"></div><div id="learnPick"></div><p class="count" id="learnCount" style="margin:12px 0 0"></p><div class="method-list" id="learnList"></div>`;
     box.querySelector("#learnSearch").value = learnQ;
   }
-  $("#learnCats").innerHTML = cats.length ? `<button class="chip" data-learn-cat="" aria-pressed="${!learnCat}">All</button>` + cats.map((c) => `<button class="chip" data-learn-cat="${esc(c)}" aria-pressed="${learnCat === c}">${esc(c)}</button>`).join("") : "";
-  $("#learnCount").textContent = `${shown.length} of ${ms.length} methods`;
-  $("#learnList").innerHTML = cards;
+  $("#learnCats").innerHTML = `<button class="chip" data-learn-cat="" aria-pressed="${!learnCat}">All</button>` + cats.map((c) => `<button class="chip" data-learn-cat="${esc(c)}" aria-pressed="${learnCat === c}">${esc(c)}</button>`).join("");
+  $("#learnPick").innerHTML = pickHtml;
+  $("#learnCount").textContent = `${shown.length} of ${ms.length} methods · tap one to open it`;
+  $("#learnList").innerHTML = listHtml;
+}
+// Call order, and one line on what each stage is for
+const LM_ORDER = ["Before the call", "Gatekeeper", "Openers", "Pitch", "Questions", "Objections", "Closing", "Voicemail", "Follow-up", "Tone and voice", "Mindset", "Sales methodologies"];
+const LM_NOTES = {"Before the call": "Research and timing, so the first ten seconds land.", "Gatekeeper": "Getting past whoever picks up.",
+  "Openers": "The first ten seconds: earn the next thirty.", "Pitch": "Why you called, said in their words.", "Questions": "Get them talking about their problem.",
+  "Objections": "What to do when they push back.", "Closing": "Ask for the small next step: the stop-by or a call.", "Voicemail": "When nobody picks up.",
+  "Follow-up": "Staying in touch until the timing's right.", "Tone and voice": "How you sound matters as much as what you say.",
+  "Mindset": "Staying steady through a day of no's.", "Sales methodologies": "Whole systems. Borrow one piece at a time."};
+// The first sentence in bold: the takeaway, then the detail
+function lmLead(text) {
+  const m = String(text || "").match(/^(.+?[.!?])(\s+[\s\S]*)?$/);
+  return m && m[2] ? `<b>${esc(m[1])}</b>${esc(m[2])}` : `<b>${esc(text)}</b>`;
+}
+// "[first name]" style fill-ins show as blanks, like on the flow chart
+const lmSay = (t) => esc(t).replace(/\[([^\]]+)\]/g, (x) => `<span class="blank">${x}</span>`);
+// "IF x THEN y" / "ELSE IF" / "ELSE" rules become "If x → y" rows; numbered steps become a numbered list
+function lmRules(v) {
+  if (!v) return "";
+  const lines = Array.isArray(v) ? v : String(v).split("\n").map((l) => l.replace(/^\s*-\s+/, "")).filter(Boolean);
+  if (lines.every((l) => /^\d+\.\s/.test(l))) return `<ol class="m-how">${lines.map((l) => `<li>${esc(l.replace(/^\d+\.\s+/, ""))}</li>`).join("")}</ol>`;
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  return `<ul class="lm-rules">${lines.map((l) => {
+    const r = l.match(/^(?:ELSE\s+)?IF\s+(.+?)\s+THEN\s+(.+)$/s), other = l.match(/^ELSE\s+(.+)$/s);
+    return r ? `<li><span class="if"><b>If</b> ${esc(r[1])}</span><span>→ ${esc(cap(r[2]))}</span></li>`
+      : other ? `<li><span class="if"><b>Otherwise</b></span><span>→ ${esc(cap(other[1]))}</span></li>` : `<li>${esc(l)}</li>`;
+  }).join("")}</ul>`;
+}
+function lmCard(m, open) {
+  const mistakes = m.mistakes && m.mistakes.length;
+  return `<details class="lm${m.avoid ? " avoid" : ""}" ${open ? "open" : ""}><summary><span class="lm-name">${esc(m.name.replace(/\s+—\s+Anti-Patterns?$/, ""))}${m.avoid ? ` <span class="flag">Don't do this</span>` : ""}</span>
+      ${m.summary ? `<p class="lm-gist">${esc(m.summary)}</p>` : ""}</summary>
+    <div class="lm-body">
+      ${m.example ? `<div class="m-say"><span class="label">${m.avoid ? "What it sounds like" : "Say it like this"}</span><p>${lmSay(m.example)}</p>${m.avoid ? "" : `<button class="btn copy-sm" data-copytext="${esc(m.example)}">Copy</button>`}</div>` : ""}
+      ${m.how ? `<div><span class="label">The steps</span>${lmRules(m.how)}</div>` : ""}
+      ${m.when ? `<div><span class="label">${m.how ? "On a cold call" : "When to use it"}</span>${lmRules(m.when)}</div>` : ""}
+      ${m.why ? `<div><span class="label">Why it works</span><p class="lm-why">${lmLead(m.why)}</p></div>` : ""}
+      ${mistakes || m.drill ? `<details class="more-lines"><summary>${m.category === "Sales methodologies" ? "Weak spots" : "Common mistakes"}${m.drill ? " and a practice drill" : ""}</summary>
+        ${mistakes ? `<ul class="m-how" style="margin-top:6px">${m.mistakes.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}${m.drill ? `<p class="lm-drill"><b>Practice drill:</b> ${esc(m.drill)}</p>` : ""}</details>` : ""}
+      ${m.source ? `<p class="m-src">Source: ${esc(m.source)}</p>` : ""}
+    </div></details>`;
 }
 document.addEventListener("click", (e) => {
   const t = e.target.closest("button"); if (!t) return;
