@@ -4,7 +4,7 @@
 try { if (localStorage.getItem("lfs-theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (_) {}</script>
 <head>
 <meta charset="utf-8">
-<meta name="lfs-build" content="29f64cd">
+<meta name="lfs-build" content="1d43a67">
 <!--
   2026-11-01 polish pass (from a full click-through test on desktop 1440px + phone 390px). Every change is marked "2026-11-01" in place.
   Bugs fixed: blank page when the app reopened on a lead; Services showed "None tagged yet" when reopened; the Goals & transcript
@@ -761,10 +761,10 @@ const OUTCOME_COLS = ["lead", "niche", "channel", "opener", "pitch", "response",
   "follow_up_date", "predicted_path", "path_correct", "off_course_at", "date", "notes"];
 const DB = {
   async check(q) { const {data, error} = await q; if (error) throw error; return data; },
-  async all(table, columns, order) {  // reads every row, 1,000 at a time
+  async all(table, columns, order, where = (q) => q) {  // reads every row, 1,000 at a time
     let rows = [];
     for (let from = 0; ; from += 1000) {
-      const page = await DB.check(sb.from(table).select(columns).order(order).range(from, from + 999));
+      const page = await DB.check(where(sb.from(table).select(columns)).order(order).range(from, from + 999));
       rows = rows.concat(page);
       if (page.length < 1000) return rows;
     }
@@ -789,14 +789,16 @@ const DB = {
   },
   deleteOutcome: (id) => DB.check(sb.from("outcomes").delete().eq("id", id)),
   leadPitch: (id) => DB.check(sb.from("lead_pitches").select("template,polished,review").eq("lead_id", id).maybeSingle()),
-  // Call flow: cards and connections are built by the refresh; calls and call_steps are Giles's log
+  // Call flow: cards and connections are built by the refresh; calls and call_steps are Giles's log.
+  // 2026-11-02: with a flow for every niche, a niche's cards and connections load the first time it's opened (cfLoad)
   async callFlows() {
-    const [meta, cards, connections, tiers, house, calls] = await Promise.all([DB.content("call_flows"),
-      DB.all("cards", "id,type,label,script,research_source,is_placeholder,tip,lead_hint", "id"),
-      DB.all("connections", "id,niche,from_card,to_card,to_tier,research_prob", "id"),
+    const [meta, tiers, house, calls] = await Promise.all([DB.content("call_flows"),
       DB.check(sb.from("win_conditions").select("*").order("tier")), DB.houseStats(), DB.calls()]);
-    return {meta: meta || {}, cards, connections, tiers, house, calls, built: {}};
+    return {meta: meta || {}, cards: {}, connections: {}, tiers, house, calls, built: {}};
   },
+  flowCards: (niche) => DB.all("cards", "id,type,label,script,research_source,is_placeholder,tip,lead_hint", "id",
+    (q) => (niche ? q.eq("niche", niche) : q.is("niche", null))),
+  flowConnections: (niche) => DB.all("connections", "id,niche,from_card,to_card,to_tier,research_prob", "id", (q) => q.eq("niche", niche)),
   houseStats: () => DB.check(sb.from("inhouse_reply_stats").select("niche,from_card,to_card,uses,inhouse_prob")),
   calls: () => DB.all("calls", "id,lead,niche,final_tier,date,logged_at", "logged_at"),
   logCall: (c) => DB.check(sb.rpc("log_call", {p_niche: c.niche, p_lead: c.lead, p_final_tier: c.tier, p_notes: c.notes, p_steps: c.steps})),
@@ -1313,7 +1315,7 @@ const isPriority = (type) => type === (settings.priority_niche || "Barber Shop")
 let flowLead = null;  // the prospect loaded into the flow chart, or null for a general call
 function renderNiche() {
   if (!sales || !sales.niches.length) { if (sales) $("#nicheBody").innerHTML = `<div class="empty">No niches loaded yet.</div>`; return; }
-  const ordered = sales.niches.slice().sort((a, b) => (isPriority(b.type) - isPriority(a.type)) || (!!cfFlow(b.type) - !!cfFlow(a.type)) || b.ready - a.ready);
+  const ordered = sales.niches.slice().sort((a, b) => (isPriority(b.type) - isPriority(a.type)) || (cfHas(b.type) - cfHas(a.type)) || b.ready - a.ready);
   let type = $("#nicheSelect").value;
   if (!type || !sales.niches.some((x) => x.type === type)) { type = ordered[0].type; $("#nicheSelect").value = type; }
   if (flowLead && flowLead.type !== type) flowLead = null;
@@ -1321,8 +1323,8 @@ function renderNiche() {
   if (!current.log || current.log.niche !== type || (current.log.lead || "") !== (L ? L.id : "")) startLog(n, L, L ? "personalized" : "general");
   current.niche = n;
   $("#flowNiches").innerHTML = `<span class="label" style="margin:0">Niche</span>
-    <details class="niche-pick"><summary>${esc(type)}${cfFlow(type) ? "" : ` <small>(basic)</small>`}</summary><div class="menu">
-      ${ordered.map((x) => `<button data-flow-niche="${esc(x.type)}" aria-pressed="${x.type === type}">${isPriority(x.type) ? "★ " : ""}${esc(x.type)}${cfFlow(x.type) ? ` <small>full call flow</small>` : ` <small>basic</small>`}</button>`).join("")}</div></details>
+    <details class="niche-pick"><summary>${esc(type)}${cfHas(type) ? "" : ` <small>(basic)</small>`}</summary><div class="menu">
+      ${ordered.map((x) => `<button data-flow-niche="${esc(x.type)}" aria-pressed="${x.type === type}">${isPriority(x.type) ? "★ " : ""}${esc(x.type)}${cfHas(x.type) ? ` <small>full call flow</small>` : ` <small>basic</small>`}</button>`).join("")}</div></details>
     ${isPriority(type) ? `<span class="help" style="margin:0">★ Your first niche</span>` : `<button class="btn quiet copy-sm" style="margin:0" data-set-priority="${esc(type)}">★ Make this my first niche</button>`}`;
   const first = (o) => String(o || "").trim().split(/\s+/)[0];
   $("#flowWho").innerHTML = L ? `<div class="who-strip"><div><span class="label" style="margin:0">Calling</span><b>${esc(L.name)}</b>
@@ -1332,16 +1334,17 @@ function renderNiche() {
       <div class="actions" style="margin:0"><button class="btn primary" data-niche-leads="${esc(n.type)}">Pick a ${esc(n.type.toLowerCase())} prospect</button></div></div>`;
   const fold = (k, title, body) => `<details class="fold" data-fold="${k}" ${current.folds && current.folds.has(k) ? "open" : ""}><summary>${title}</summary><div class="fold-body">${body}</div></details>`;
   const fmts = {email: `Subject: ${n.email.subject}\n\n${n.email.body}\n\n${n.email.signature}`, text: n.text, spoken: n.spoken};
-  const flow = cfFlow(n.type) ? `<div class="cf" id="cf"></div>`
+  const flow = cfHas(n.type) ? `<div class="cf" id="cf"><div class="loading">Loading the call flow…</div></div>`
     : `<p class="help" style="margin-top:14px">${esc(n.type)} doesn't have a full call flow yet, so this is the basic flowchart.</p>` + treeHtml(n, current.treeOpener && n.openers.some((o) => o.id === current.treeOpener) ? current.treeOpener : null) + logBoxHtml(n, L);
   $("#nicheBody").innerHTML = `${flow}
-    ${cfFlow(n.type) ? cfStatsHtml(n.type) : nicheStatsHtml(n)}
+    ${cfHas(n.type) ? cfStatsHtml(n.type) : nicheStatsHtml(n)}
     ${fold("nprob", `${esc(n.type)}: top problems <span>Internal, not sent</span>`, `<ol style="margin:0;padding-left:20px">${(n.summary || []).map((x) => `<li>${esc(x.label)}: <b>${x.pct}%</b>${x.of_sites ? " of their websites" : " of ready leads"}</li>`).join("")}</ol>
       ${n.low_sample ? `<p class="help"><span class="flag">Low sample</span> ${n.grouped_with ? `Problems borrowed from ${esc(n.grouped_with)}.` : ""}</p>` : ""}${n.note ? `<p class="help">${esc(n.note)}</p>` : ""}`)}
     ${fold("npitch", `General ${esc(n.type.toLowerCase())} pitch <span>Email · Text · In person</span>`, `<div class="fmt-tabs">${[["email", "Email"], ["text", "Text"], ["spoken", "In person / phone"]].map(([k, t]) => `<button class="chip" data-fmt="${k}" aria-pressed="${current.fmt === k}">${t}</button>`).join("")}</div>
       ${copyable(current.fmt === "email" ? `Email (${n.email.words} words)` : current.fmt === "text" ? `Text (${n.text.length} characters)` : "Spoken, about 30 seconds", fmts[current.fmt] || fmts.email)}`)}
     ${n.plan ? fold("nplan", `Recommended plan: ${esc(n.plan.name)} <span>${esc(n.plan.price)}</span>`, `<p style="margin:0;color:var(--ink)">${esc(n.plan.reason)} Month to month, cancel anytime, with a 5-day free trial and no card needed.</p>`) : ""}`;
-  if (cfFlow(n.type)) cfOpen(n.type, L);
+  if (cfHas(n.type)) cfLoad(n.type).then(() => { if (current.niche === n && $("#cf")) cfOpen(n.type, L); })
+    .catch(() => { $("#cf").innerHTML = `<div class="empty">Couldn't load the call flow. Check your connection.</div>`; });
 }
 // Load a prospect into the flow chart
 function openFlowFor(l) {
@@ -1587,20 +1590,31 @@ const CF_HINTS = {opener: "Ranked by chance of a stop-by or better", prospect: "
 let cfData = null;  // loaded with the leads: {meta, cards, connections, tiers, house, calls, built}
 let cf = {key: "", niche: "", lead: null, path: [], source: "research", notes: "", justPicked: -1};
 
-// One niche's tree as {openers, fallback, nodes}; outcome nodes are t1…t11
+// Does this niche have a full call flow? (cfFlow also needs cfLoad to have run for it)
+const cfHas = (type) => !!(cfData && cfData.meta[type]);
+// Loads a niche's cards and connections once, plus the shared cards the first time
+async function cfLoad(type) {
+  if (!cfHas(type) || cfData.connections[type]) return;
+  const [shared, own, conns] = await Promise.all([cfData.cards.__shared ? [] : DB.flowCards(null), DB.flowCards(type), DB.flowConnections(type)]);
+  [...shared, ...own].forEach((c) => cfData.cards[c.id] = c);
+  cfData.cards.__shared = true;
+  cfData.connections[type] = conns;
+}
+// One niche's tree as {openers, fallback, words, nodes}; outcome nodes are t1…t11
 function cfFlow(type) {
-  if (!cfData || !cfData.meta[type]) return null;
+  if (!cfHas(type) || !cfData.connections[type]) return null;
   if (cfData.built[type]) return cfData.built[type];
-  const cards = Object.fromEntries(cfData.cards.map((c) => [c.id, c])), house = {}, uses = {};
+  const cards = cfData.cards, house = {}, uses = {};
   cfData.house.filter((h) => h.niche === type).forEach((h) => { (house[h.from_card] = house[h.from_card] || {})[h.to_card] = +h.inhouse_prob; uses[h.from_card] = +h.uses; });
   const nodes = {};
-  cfData.connections.filter((c) => c.niche === type).sort((a, b) => a.id - b.id).forEach((c) => {
+  cfData.connections[type].slice().sort((a, b) => a.id - b.id).forEach((c) => {
     const from = nodes[c.from_card] = nodes[c.from_card] || {...cards[c.from_card], next: []};
     const to = c.to_tier ? "t" + c.to_tier : c.to_card;
     from.next.push(c.research_prob === null ? {to} : {to, research: +c.research_prob, inhouse: house[c.from_card] ? house[c.from_card][to] || 0 : 0, uses: uses[c.from_card] || 0});
   });
   cfData.tiers.forEach((t) => nodes["t" + t.tier] = {type: "outcome", ...t});
-  return cfData.built[type] = {type, openers: cfData.meta[type].openers, fallback: cfData.meta[type].shop_fallback, nodes};
+  const m = cfData.meta[type];
+  return cfData.built[type] = {type, openers: m.openers, fallback: m.shop_fallback, words: m.words || {}, nodes};
 }
 
 function cfProb(e) {
@@ -1653,7 +1667,12 @@ function cfText(F, text) {
   const shop = l ? l.name.split(/\s+[-|–]\s+/)[0] : F.fallback;
   const owner = l && l.owner ? String(l.owner).trim().split(/\s+/)[0] : "";
   const hi = owner ? `Hi, is this ${fill(owner)}? ` : l ? "Hi. " : `Hi, is this ${blank("owner")}? `;
-  return esc(text).replace(/\{shop\}/g, fill(shop)).replace(/\{hi\}/g, hi)
+  // 2026-11-02: shared cards say {customers}, {peers} and so on; each niche's flow has its own words ({Customers} = capitalized)
+  const word = (m, k) => {
+    const lk = k[0].toLowerCase() + k.slice(1), v = F.words[lk];
+    return v === undefined ? m : esc(k === lk ? v : v[0].toUpperCase() + v.slice(1));
+  };
+  return esc(text).replace(/\{shop\}/g, fill(shop)).replace(/\{hi\}/g, hi).replace(/\{([A-Za-z_]+)\}/g, word)
     .replace(/\[rating\]/g, l && l.rating ? fill(l.rating) : blank("rating"))
     .replace(/\[reviews\]/g, l && l.reviews ? fill(l.reviews) : blank("reviews"))
     .replace(/\[(day|time|name|your number)\]/g, (m, k) => blank(k));
@@ -1894,9 +1913,10 @@ function renderPractice() {
   if (pmode === "drill") { render(); return; }
   renderPC();
 }
-const pcNiches = () => (sales ? sales.niches.filter((n) => cfFlow(n.type)).sort((a, b) => isPriority(b.type) - isPriority(a.type)) : []);
+const pcNiches = () => (sales ? sales.niches.filter((n) => cfHas(n.type)).sort((a, b) => isPriority(b.type) - isPriority(a.type)) : []);
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-function pcStart(type) {
+async function pcStart(type) {
+  try { await cfLoad(type); } catch (_) { toast("Couldn't load that call flow. Check your connection."); return; }
   const F = cfFlow(type); if (!F) return;
   F.memo = null;
   pc = {type, steps: [], waiting: shuffle(F.openers), best: 0, turns: 0, done: false};
